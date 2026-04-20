@@ -4,6 +4,7 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 const appShell = ref(null)
 const contactForm = ref(null)
 const currentLang = ref('sq')
+const showLoader = ref(true)
 
 const heroScript = `𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹
 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾
@@ -69,6 +70,15 @@ const serviceCatalog = [
       es: 'Traducci\u00f3n Certificada',
       bs: 'Ovjereni Prijevod',
       sq: 'P\u00ebrkthim i Certifikuar',
+    },
+  },
+  {
+    value: 'proofreading-editing',
+    labels: {
+      en: 'Proofreading & Editing',
+      es: 'Correcci\u00f3n y Edici\u00f3n',
+      bs: 'Lektura i Redaktura',
+      sq: 'Lektur\u00eb dhe Redaktim Dokumentesh',
     },
   },
   {
@@ -264,9 +274,13 @@ const directEmailHref = computed(() => {
 
 let observer
 let heroTypingTimer
+let loaderHideTimer
+let previousBodyOverflow = ''
 
-function setLang(lang) {
-  currentLang.value = lang
+function releaseBodyScroll() {
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = previousBodyOverflow
+  }
 }
 
 function scheduleHeroTyping(delay) {
@@ -375,6 +389,16 @@ async function submitForm() {
 }
 
 onMounted(() => {
+  if (typeof document !== 'undefined') {
+    previousBodyOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+  }
+
+  loaderHideTimer = window.setTimeout(() => {
+    showLoader.value = false
+    releaseBodyScroll()
+  }, 1500)
+
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -396,17 +420,25 @@ onMounted(() => {
     observer?.observe(element)
   })
 
-  scheduleHeroTyping(420)
+  scheduleHeroTyping(1080)
 })
 
 onBeforeUnmount(() => {
   observer?.disconnect()
   clearTimeout(heroTypingTimer)
+  clearTimeout(loaderHideTimer)
+  releaseBodyScroll()
 })
 </script>
 
 <template>
-  <div ref="appShell" class="app-shell" :data-lang="currentLang">
+  <Transition name="loader-fade">
+    <div v-if="showLoader" class="loader-screen" role="status" aria-label="Loading">
+      <div class="loader-spinner" aria-hidden="true"></div>
+    </div>
+  </Transition>
+
+  <div ref="appShell" class="app-shell" :class="{ 'is-loading': showLoader }" :data-lang="currentLang">
     <nav>
       <a href="#" class="nav-logo">
         <svg viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -464,43 +496,21 @@ onBeforeUnmount(() => {
       </ul>
 
       <div class="nav-lang">
-        <button
-          type="button"
-          class="lang-btn"
-          :class="{ active: currentLang === 'sq' }"
-          @click="setLang('sq')"
-        >
-          SQ
-        </button>
-        <button
-          type="button"
-          class="lang-btn"
-          :class="{ active: currentLang === 'en' }"
-          @click="setLang('en')"
-        >
-          EN
-        </button>
-        <button
-          type="button"
-          class="lang-btn"
-          :class="{ active: currentLang === 'es' }"
-          @click="setLang('es')"
-        >
-          ES
-        </button>
-        <button
-          type="button"
-          class="lang-btn"
-          :class="{ active: currentLang === 'bs' }"
-          @click="setLang('bs')"
-        >
-          BS
-        </button>
+        <select v-model="currentLang" class="lang-select" aria-label="Choose language">
+          <option value="sq">SQ | Shqip</option>
+          <option value="en">EN | English</option>
+          <option value="es">ES | Espanol</option>
+          <option value="bs">BS | Bosanski</option>
+        </select>
       </div>
     </nav>
 
     <section class="hero">
       <div class="cuneiform-bg" aria-hidden="true">{{ heroScript }}</div>
+      <div class="hero-aura hero-aura-one" aria-hidden="true"></div>
+      <div class="hero-aura hero-aura-two" aria-hidden="true"></div>
+      <div class="hero-orbit hero-orbit-one" aria-hidden="true"></div>
+      <div class="hero-orbit hero-orbit-two" aria-hidden="true"></div>
 
       <div class="hero-center">
         <svg class="tower-mark" viewBox="0 0 160 175" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -535,7 +545,6 @@ onBeforeUnmount(() => {
           <span class="content-sq">Shërbime të Përkthimit dhe Interpretimit</span>
         </p>
         <div class="hero-langs">
-          <span>Shqip</span>
           <span>English</span>
           <span>Español</span>
           <span>Bosanski</span>
@@ -550,6 +559,88 @@ onBeforeUnmount(() => {
         <div class="scroll-line"></div>
       </div>
     </section>
+
+    <div class="motion-band" aria-hidden="true">
+      <div class="motion-band-inner">
+        <div class="motion-band-group">
+          <span class="motion-band-item">
+            <span class="content-en">Certified Translation</span>
+            <span class="content-es">Traduccion Certificada</span>
+            <span class="content-bs">Ovjereni Prijevod</span>
+            <span class="content-sq">Perkthim i Certifikuar</span>
+          </span>
+          <span class="motion-band-item">
+            <span class="content-en">Live Interpretation</span>
+            <span class="content-es">Interpretacion en Vivo</span>
+            <span class="content-bs">Tumacenje Uzivo</span>
+            <span class="content-sq">Interpretim i Drejtperdrejte</span>
+          </span>
+          <span class="motion-band-item">
+            <span class="content-en">Proofreading &amp; Editing</span>
+            <span class="content-es">Correccion y Edicion</span>
+            <span class="content-bs">Lektura i Redaktura</span>
+            <span class="content-sq">Lekture dhe Redaktim</span>
+          </span>
+          <span class="motion-band-item">
+            <span class="content-en">Legal Services</span>
+            <span class="content-es">Servicios Legales</span>
+            <span class="content-bs">Pravne Usluge</span>
+            <span class="content-sq">Sherbime Ligjore</span>
+          </span>
+          <span class="motion-band-item">
+            <span class="content-en">Business Localization</span>
+            <span class="content-es">Localizacion Empresarial</span>
+            <span class="content-bs">Poslovna Lokalizacija</span>
+            <span class="content-sq">Lokalizim Biznesi</span>
+          </span>
+          <span class="motion-band-item">
+            <span class="content-en">Confidential Handling</span>
+            <span class="content-es">Manejo Confidencial</span>
+            <span class="content-bs">Povjerljivo Rukovanje</span>
+            <span class="content-sq">Trajtim Konfidencial</span>
+          </span>
+        </div>
+
+        <div class="motion-band-group">
+          <span class="motion-band-item">
+            <span class="content-en">Certified Translation</span>
+            <span class="content-es">Traduccion Certificada</span>
+            <span class="content-bs">Ovjereni Prijevod</span>
+            <span class="content-sq">Perkthim i Certifikuar</span>
+          </span>
+          <span class="motion-band-item">
+            <span class="content-en">Live Interpretation</span>
+            <span class="content-es">Interpretacion en Vivo</span>
+            <span class="content-bs">Tumacenje Uzivo</span>
+            <span class="content-sq">Interpretim i Drejtperdrejte</span>
+          </span>
+          <span class="motion-band-item">
+            <span class="content-en">Proofreading &amp; Editing</span>
+            <span class="content-es">Correccion y Edicion</span>
+            <span class="content-bs">Lektura i Redaktura</span>
+            <span class="content-sq">Lekture dhe Redaktim</span>
+          </span>
+          <span class="motion-band-item">
+            <span class="content-en">Legal Services</span>
+            <span class="content-es">Servicios Legales</span>
+            <span class="content-bs">Pravne Usluge</span>
+            <span class="content-sq">Sherbime Ligjore</span>
+          </span>
+          <span class="motion-band-item">
+            <span class="content-en">Business Localization</span>
+            <span class="content-es">Localizacion Empresarial</span>
+            <span class="content-bs">Poslovna Lokalizacija</span>
+            <span class="content-sq">Lokalizim Biznesi</span>
+          </span>
+          <span class="motion-band-item">
+            <span class="content-en">Confidential Handling</span>
+            <span class="content-es">Manejo Confidencial</span>
+            <span class="content-bs">Povjerljivo Rukovanje</span>
+            <span class="content-sq">Trajtim Konfidencial</span>
+          </span>
+        </div>
+      </div>
+    </div>
 
     <section id="about" class="about">
       <div class="section-inner">
@@ -733,6 +824,30 @@ onBeforeUnmount(() => {
           </div>
 
           <div class="service-card">
+            <div class="service-icon">𒈾</div>
+            <div class="service-title content-en">Proofreading &amp; Editing</div>
+            <div class="service-title content-es">Corrección y Edición</div>
+            <div class="service-title content-bs">Lektura i Redaktura</div>
+            <div class="service-title content-sq">Lekturë dhe Redaktim Dokumentesh</div>
+            <p class="service-desc content-en">
+              Professional review, proofreading, and final document polishing for translations,
+              reports, contracts, and official submissions.
+            </p>
+            <p class="service-desc content-es">
+              Revisión profesional, corrección y pulido final de documentos para traducciones,
+              informes, contratos y presentaciones oficiales.
+            </p>
+            <p class="service-desc content-bs">
+              Profesionalna lektura, korektura i završno uređivanje dokumenata za prijevode,
+              izvještaje, ugovore i službenu dokumentaciju.
+            </p>
+            <p class="service-desc content-sq">
+              Lekturë profesionale, korrigjim dhe redaktim përfundimtar i dokumenteve për
+              përkthime, raporte, kontrata dhe paraqitje zyrtare.
+            </p>
+          </div>
+
+          <div class="service-card">
             <div class="service-icon">𒁹</div>
             <div class="service-title content-en">Business Localization</div>
             <div class="service-title content-es">Localización Empresarial</div>
@@ -753,30 +868,6 @@ onBeforeUnmount(() => {
             <p class="service-desc content-sq">
               Faqe interneti, marketing dhe komunikime korporative të përshtatura për audiencat dhe
               kontekstet kulturore të gjuhës së synuar.
-            </p>
-          </div>
-
-          <div class="service-card">
-            <div class="service-icon">𒂗</div>
-            <div class="service-title content-en">Medical Interpretation</div>
-            <div class="service-title content-es">Interpretación Médica</div>
-            <div class="service-title content-bs">Medicinska Tumačenja</div>
-            <div class="service-title content-sq">Interpretim Mjekësor</div>
-            <p class="service-desc content-en">
-              Specialized healthcare interpreting ensuring accurate patient-provider communication
-              in critical settings.
-            </p>
-            <p class="service-desc content-es">
-              Interpretación especializada en salud para garantizar comunicación precisa entre
-              paciente y médico.
-            </p>
-            <p class="service-desc content-bs">
-              Specijalizovano medicinsko tumačenje koje osigurava tačnu komunikaciju između
-              pacijenta i liječnika.
-            </p>
-            <p class="service-desc content-sq">
-              Interpretim i specializuar shëndetësor që siguron komunikim të saktë midis pacientit
-              dhe mjekut në situata kritike.
             </p>
           </div>
 
@@ -911,27 +1002,6 @@ onBeforeUnmount(() => {
               </p>
             </div>
 
-            <div class="lang-card">
-              <span class="lang-flag">🇦🇱</span>
-              <div class="lang-name">Albanian</div>
-              <span class="lang-native">Shqip</span>
-              <p class="lang-desc content-en">
-                Expert Albanian translation for legal, administrative, family, and cross-border
-                communication in Kosovo, Albania, and diaspora communities.
-              </p>
-              <p class="lang-desc content-es">
-                Traducción experta de albanés para comunicación legal, administrativa, familiar y
-                transfronteriza en Kosovo, Albania y la diáspora.
-              </p>
-              <p class="lang-desc content-bs">
-                Stručan albanski prijevod za pravnu, administrativnu, porodičnu i prekograničnu
-                komunikaciju na Kosovu, u Albaniji i dijaspori.
-              </p>
-              <p class="lang-desc content-sq">
-                Përkthim profesional të shqipes për komunikim ligjor, administrativ, familjar dhe
-                ndërkufitar në Kosovë, Shqipëri dhe diasporë.
-              </p>
-            </div>
           </div>
         </div>
       </div>

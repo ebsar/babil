@@ -20,6 +20,7 @@ const serviceLabels = {
   'document-translation': 'Document Translation',
   'live-interpretation': 'Live Interpretation',
   'certified-translation': 'Certified Translation',
+  'proofreading-editing': 'Proofreading & Editing',
   'business-localization': 'Business Localization',
   'legal-services': 'Legal Services',
 }
@@ -39,6 +40,7 @@ const contactSchema = z.object({
     'document-translation',
     'live-interpretation',
     'certified-translation',
+    'proofreading-editing',
     'business-localization',
     'legal-services',
   ]),
