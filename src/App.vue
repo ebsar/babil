@@ -598,11 +598,11 @@ onBeforeUnmount(() => {
             <div class="contact-details">
               <div class="contact-item">
                 <span class="contact-item-label">Email</span>
-                <span class="contact-item-value">info@babil-translations.com</span>
+                <span class="contact-item-value">qerim.ondozi@gmail.com</span>
               </div>
               <div class="contact-item">
                 <span class="contact-item-label">Phone</span>
-                <span class="contact-item-value">+1 (800) BABIL-00</span>
+                <span class="contact-item-value">+38345741555</span>
               </div>
               <div class="contact-item">
                 <span class="contact-item-label content-en">Hours</span>
