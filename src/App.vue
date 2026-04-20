@@ -108,6 +108,8 @@ const currentServiceOptions = computed(() =>
   })),
 )
 
+const formspreeEndpoint = 'https://formspree.io/f/xrerapwb'
+
 const contactCopy = {
   en: {
     servicePlaceholder: 'Select a service',
@@ -149,19 +151,27 @@ const contactCopy = {
 }
 
 const activeContactCopy = computed(() => contactCopy[currentLang.value])
-const contactEndpoint = (import.meta.env.VITE_CONTACT_API_URL?.trim() || '/api/contact')
+const contactEndpoint = (import.meta.env.VITE_CONTACT_API_URL?.trim() || formspreeEndpoint)
 
 const contactErrorCopy = {
   en: {
     network:
-      'The contact server is not reachable right now. Start the site with npm run dev or npm run preview, or email us directly.',
+      'The contact service is not reachable right now. Please try again shortly or email us directly.',
+    endpoint:
+      'The contact form is not connected on this website yet. Please email us directly.',
+    unavailable:
+      'The contact service is not configured on the server yet. Please email us directly.',
     validation: 'Please review the form fields and try again.',
     generic: 'We could not send your request right now. Please try again or email us directly.',
     emailFallback: 'Email Us Directly',
   },
   es: {
     network:
-      'El servidor de contacto no esta disponible ahora mismo. Inicie el sitio con npm run dev o npm run preview, o escribanos directamente por correo.',
+      'El servicio de contacto no esta disponible ahora mismo. Intente de nuevo en unos momentos o escribanos directamente por correo.',
+    endpoint:
+      'El formulario de contacto aun no esta conectado en este sitio web. Escribanos directamente por correo.',
+    unavailable:
+      'El servicio de contacto aun no esta configurado en el servidor. Escribanos directamente por correo.',
     validation: 'Revise los campos del formulario e intentelo de nuevo.',
     generic:
       'No pudimos enviar su solicitud ahora mismo. Intente de nuevo o escribanos por correo.',
@@ -169,7 +179,11 @@ const contactErrorCopy = {
   },
   bs: {
     network:
-      'Kontakt server trenutno nije dostupan. Pokrenite stranicu sa npm run dev ili npm run preview, ili nam pisite direktno e-postom.',
+      'Kontakt servis trenutno nije dostupan. Pokusajte ponovo uskoro ili nam pisite direktno e-postom.',
+    endpoint:
+      'Kontakt obrazac jos nije povezan na ovoj web stranici. Posaljite nam email direktno.',
+    unavailable:
+      'Kontakt servis jos nije konfigurisan na serveru. Posaljite nam email direktno.',
     validation: 'Provjerite polja obrasca i pokusajte ponovo.',
     generic:
       'Trenutno nismo mogli poslati vas zahtjev. Pokusajte ponovo ili nam pisite e-postom.',
@@ -177,7 +191,11 @@ const contactErrorCopy = {
   },
   sq: {
     network:
-      'Serveri i kontaktit nuk eshte i arritshem tani. Nise faqen me npm run dev ose npm run preview, ose na shkruaj direkt me email.',
+      'Sherbimi i kontaktit nuk eshte i arritshem tani. Provo perseri pas pak ose na shkruaj direkt me email.',
+    endpoint:
+      'Formulari i kontaktit ende nuk eshte i lidhur ne kete webfaqe. Na shkruaj direkt me email.',
+    unavailable:
+      'Sherbimi i kontaktit ende nuk eshte i konfiguruar ne server. Na shkruaj direkt me email.',
     validation: 'Kontrollo fushat e formularit dhe provo perseri.',
     generic:
       'Nuk mund ta dergojme kerkesen tani. Ju lutemi provoni perseri ose na shkruani me email.',
@@ -240,6 +258,10 @@ const form = reactive({
   website: '',
 })
 
+const selectedServiceLabel = computed(
+  () => currentServiceOptions.value.find((option) => option.value === form.service)?.label ?? form.service,
+)
+
 const submissionState = ref('idle')
 const submissionErrorKey = ref('generic')
 const heroTaglineIndex = ref(0)
@@ -262,7 +284,7 @@ const directEmailHref = computed(() => {
       `First name: ${form.firstName || '-'}`,
       `Last name: ${form.lastName || '-'}`,
       `Email: ${form.email || '-'}`,
-      `Service: ${form.service || '-'}`,
+      `Service: ${selectedServiceLabel.value || '-'}`,
       '',
       'Message:',
       form.message || '-',
@@ -342,26 +364,36 @@ async function submitForm() {
   submissionErrorKey.value = 'generic'
 
   try {
+    if (form.website.trim()) {
+      submissionState.value = 'success'
+      resetForm()
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('name', `${form.firstName.trim()} ${form.lastName.trim()}`.trim())
+    formData.append('firstName', form.firstName.trim())
+    formData.append('lastName', form.lastName.trim())
+    formData.append('email', form.email.trim())
+    formData.append('service', selectedServiceLabel.value || form.service)
+    formData.append('language', currentLang.value.toUpperCase())
+    formData.append('message', form.message.trim())
+    formData.append('_subject', `New Babil contact request from ${form.firstName.trim()} ${form.lastName.trim()}`.trim())
+
     const response = await fetch(contactEndpoint, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        Accept: 'application/json',
       },
-      body: JSON.stringify({
-        firstName: form.firstName.trim(),
-        lastName: form.lastName.trim(),
-        email: form.email.trim(),
-        service: form.service,
-        message: form.message.trim(),
-        language: currentLang.value,
-        website: form.website,
-      }),
+      body: formData,
     })
 
     const result = await response.json().catch(() => ({}))
 
     if (!response.ok) {
-      const requestError = new Error(result.error ?? 'Request failed')
+      const requestError = new Error(
+        result.errors?.map((entry) => entry.message).join(', ') || result.error || 'Request failed',
+      )
       requestError.status = response.status
       throw requestError
     }
@@ -378,6 +410,10 @@ async function submitForm() {
 
     if (error?.status === 422) {
       submissionErrorKey.value = 'validation'
+    } else if (error?.status === 404 || error?.status === 405) {
+      submissionErrorKey.value = 'endpoint'
+    } else if (error?.status === 503) {
+      submissionErrorKey.value = 'unavailable'
     } else if (isNetworkError) {
       submissionErrorKey.value = 'network'
     } else {

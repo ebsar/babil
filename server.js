@@ -76,6 +76,9 @@ function createTransporter() {
 }
 
 const transporter = createTransporter()
+const hasEmailDeliveryConfig = Boolean(
+  transporter && (process.env.CONTACT_FROM_EMAIL || process.env.SMTP_USER),
+)
 
 async function saveSubmission(submission) {
   await fs.mkdir(DATA_DIR, { recursive: true })
@@ -149,9 +152,15 @@ app.post('/api/contact', async (req, res) => {
       userAgent: req.get('user-agent') ?? '',
     }
 
-    await saveSubmission(submission)
-
+    let stored = false
     let emailSent = false
+
+    try {
+      await saveSubmission(submission)
+      stored = true
+    } catch (error) {
+      console.error('Contact submission storage failed:', error)
+    }
 
     try {
       emailSent = await sendNotification(submission)
@@ -159,7 +168,15 @@ app.post('/api/contact', async (req, res) => {
       console.error('Contact email delivery failed:', error)
     }
 
-    return res.status(200).json({ ok: true, emailSent })
+    if (stored || emailSent) {
+      return res.status(200).json({ ok: true, stored, emailSent })
+    }
+
+    return res.status(hasEmailDeliveryConfig ? 500 : 503).json({
+      error: hasEmailDeliveryConfig
+        ? 'Unable to process the contact request right now.'
+        : 'Contact form delivery is not configured on the server.',
+    })
   } catch (error) {
     console.error('Contact form request failed:', error)
     return res.status(500).json({
