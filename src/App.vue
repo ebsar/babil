@@ -207,38 +207,142 @@ const activeContactErrorCopy = computed(() => contactErrorCopy[currentLang.value
 
 const languageSectionCopy = {
   en: {
-    headingHtml: 'Three languages.<br />One voice.',
+    headingHtml: 'Nine languages.<br />One voice.',
     body:
-      'We provide expert translation and interpretation across English, Spanish, and Bosnian for communities across the Americas, Europe, and the Balkans.',
+      'We provide expert translation and interpretation across Arabic, Bosnian, Croatian, English, French, German, Italian, Spanish, and Turkish for clients across Europe, the Balkans, and beyond.',
   },
   es: {
-    headingHtml: 'Tres idiomas.<br />Una voz.',
+    headingHtml: 'Nueve idiomas.<br />Una voz.',
     body:
-      'Ofrecemos traduccion e interpretacion experta en ingles, espanol y bosnio para comunidades en las Americas, Europa y los Balcanes.',
+      'Ofrecemos traduccion e interpretacion experta en arabe, bosnio, croata, ingles, frances, aleman, italiano, espanol y turco para clientes en Europa, los Balcanes y otros mercados.',
   },
   bs: {
-    headingHtml: 'Tri jezika.<br />Jedan glas.',
+    headingHtml: 'Devet jezika.<br />Jedan glas.',
     body:
-      'Pruzamo strucne prijevode i tumacenja na engleskom, spanskom i bosanskom jeziku za zajednice u Americi, Evropi i na Balkanu.',
+      'Pruzamo strucne prijevode i tumacenja na arapskom, bosanskom, hrvatskom, engleskom, francuskom, njemackom, italijanskom, spanskom i turskom jeziku za klijente sirom Evrope, Balkana i sire.',
   },
   sq: {
-    headingHtml: 'Tri gjuh\u00eb.<br />Nj\u00eb z\u00eb.',
+    headingHtml: 'Nente gjuhe.<br />Nje ze.',
     body:
-      'Ofrojm\u00eb p\u00ebrkthim dhe interpretim profesional n\u00eb anglisht, spanjisht dhe boshnjakisht p\u00ebr komunitete n\u00eb Amerik\u00eb, Evrop\u00eb dhe Ballkan.',
+      'Ofrojme perkthim dhe interpretim profesional ne arabisht, boshnjakisht, kroatisht, anglisht, frengjisht, gjermanisht, italisht, spanjisht dhe turqisht per kliente ne Evrope, Ballkan dhe me gjere.',
   },
 }
+
+const languageCards = [
+  {
+    code: 'AR',
+    name: 'Arabic',
+    native: 'al-Arabiyyah',
+    descriptions: {
+      en: 'Arabic support for formal documents, public-facing communication, and interpretation where clarity and cultural nuance matter.',
+      es: 'Soporte en arabe para documentos formales, comunicacion publica e interpretacion con claridad y sensibilidad cultural.',
+      bs: 'Arapski jezik za formalne dokumente, javnu komunikaciju i tumacenje gdje su vazni jasnoca i kulturne nijanse.',
+      sq: 'Mbeshtetje ne arabisht per dokumente formale, komunikim publik dhe interpretime ku rendesi kane qartesia dhe nuanca kulturore.',
+    },
+  },
+  {
+    code: 'BS',
+    name: 'Bosnian',
+    native: 'Bosanski',
+    descriptions: {
+      en: 'Expert Bosnian translators familiar with Balkan legal systems, healthcare, and diaspora communities.',
+      es: 'Traductores expertos de bosnio familiarizados con los sistemas legales balcanicos y comunidades de la diaspora.',
+      bs: 'Strucni bosanski prevodioci upoznati s balkanskim pravnim sistemima, zdravstvenom zastitom i dijasporom.',
+      sq: 'Perkthyes profesioniste te boshnjakishtes te njohur me sistemet juridike ballkanike, kujdesin shendetesor dhe diasporen.',
+    },
+  },
+  {
+    code: 'HR',
+    name: 'Croatian',
+    native: 'Hrvatski',
+    descriptions: {
+      en: 'Croatian support for regional communication, documentation, contracts, and cross-border collaboration in the Balkans.',
+      es: 'Soporte en croata para comunicacion regional, documentacion, contratos y colaboracion transfronteriza en los Balcanes.',
+      bs: 'Hrvatski jezik za regionalnu komunikaciju, dokumentaciju, ugovore i prekogranicnu saradnju na Balkanu.',
+      sq: 'Kroatisht per komunikim rajonal, dokumentacion, kontrata dhe bashkepunim nderkufitar ne Ballkan.',
+    },
+  },
+  {
+    code: 'EN',
+    name: 'English',
+    native: 'English',
+    descriptions: {
+      en: 'Native and professional-level English across legal, medical, technical, and business domains.',
+      es: 'Ingles nativo y de nivel profesional en ambitos legales, medicos, tecnicos y empresariales.',
+      bs: 'Maternji i profesionalni engleski u pravnim, medicinskim, tehnickim i poslovnim oblastima.',
+      sq: 'Anglishte amtare dhe e nivelit profesional ne fushat juridike, mjekesore, teknike dhe te biznesit.',
+    },
+  },
+  {
+    code: 'FR',
+    name: 'French',
+    native: 'Francais',
+    descriptions: {
+      en: 'French translation and interpretation for institutional communication, reports, presentations, and international coordination.',
+      es: 'Traduccion e interpretacion en frances para comunicacion institucional, informes, presentaciones y coordinacion internacional.',
+      bs: 'Francuski jezik za institucionalnu komunikaciju, izvjestaje, prezentacije i medjunarodnu koordinaciju.',
+      sq: 'Frengjisht per komunikim institucional, raporte, prezantime dhe koordinim nderkombetar.',
+    },
+  },
+  {
+    code: 'DE',
+    name: 'German',
+    native: 'Deutsch',
+    descriptions: {
+      en: 'German language support for business communication, formal documents, technical material, and client correspondence.',
+      es: 'Soporte en aleman para comunicacion empresarial, documentos formales, material tecnico y correspondencia con clientes.',
+      bs: 'Njemacki jezik za poslovnu komunikaciju, formalne dokumente, tehnicke materijale i prepisku s klijentima.',
+      sq: 'Gjermanisht per komunikim biznesi, dokumente formale, materiale teknike dhe korrespondence me kliente.',
+    },
+  },
+  {
+    code: 'IT',
+    name: 'Italian',
+    native: 'Italiano',
+    descriptions: {
+      en: 'Italian translation and interpretation for business, travel, cultural exchange, and professional documentation.',
+      es: 'Traduccion e interpretacion en italiano para negocios, viajes, intercambio cultural y documentacion profesional.',
+      bs: 'Italijanski jezik za poslovanje, putovanja, kulturnu razmjenu i profesionalnu dokumentaciju.',
+      sq: 'Italisht per biznes, udhetime, shkembim kulturor dhe dokumentacion profesional.',
+    },
+  },
+  {
+    code: 'ES',
+    name: 'Spanish',
+    native: 'Espanol',
+    descriptions: {
+      en: 'Regional Spanish dialects supported, Latin American and Castilian, with cultural accuracy.',
+      es: 'Dialectos regionales del espanol, latinoamericano y castellano, con precision cultural.',
+      bs: 'Podrzani regionalni spanski dijalekti, latinoamericki i kastiljski, s kulturnom tacnoscu.',
+      sq: 'Dialekte rajonale te spanjishtes, latinoamerikane dhe kastiliane, me saktesi kulturore.',
+    },
+  },
+  {
+    code: 'TR',
+    name: 'Turkish',
+    native: 'Turkce',
+    descriptions: {
+      en: 'Turkish language support for business communication, community services, trade, and formal documentation.',
+      es: 'Soporte en turco para comunicacion empresarial, servicios comunitarios, comercio y documentacion formal.',
+      bs: 'Turski jezik za poslovnu komunikaciju, usluge zajednici, trgovinu i formalnu dokumentaciju.',
+      sq: 'Turqisht per komunikim biznesi, sherbime komunitare, tregti dhe dokumentacion formal.',
+    },
+  },
+]
+
+const heroLanguages = languageCards.map((card) => card.name).sort((a, b) => a.localeCompare(b))
 
 const activeLanguageSectionCopy = computed(() => languageSectionCopy[currentLang.value])
 
 const contactBodyCopy = {
   en:
-    "Whether you need a certified translation, a live interpreter, or a full localization project, we're here to help in English, Spanish, and Bosnian.",
+    "Whether you need a certified translation, a live interpreter, or a full localization project, we're here to help across Arabic, Bosnian, Croatian, English, French, German, Italian, Spanish, and Turkish.",
   es:
-    'Ya sea que necesite una traduccion certificada, un interprete en vivo o un proyecto completo de localizacion, estamos aqui para ayudarle en ingles, espanol y bosnio.',
+    'Ya sea que necesite una traduccion certificada, un interprete en vivo o un proyecto completo de localizacion, estamos aqui para ayudarle en arabe, bosnio, croata, ingles, frances, aleman, italiano, espanol y turco.',
   bs:
-    'Bilo da trebate ovjereni prijevod, tumaca uzivo ili kompletan projekat lokalizacije, tu smo da pomognemo na engleskom, spanskom i bosanskom jeziku.',
+    'Bilo da trebate ovjereni prijevod, tumaca uzivo ili kompletan projekat lokalizacije, tu smo da pomognemo na arapskom, bosanskom, hrvatskom, engleskom, francuskom, njemackom, italijanskom, spanskom i turskom jeziku.',
   sq:
-    'Qofte se ju nevojitet nje perkthim i certifikuar, nje interpretues i drejtperdrejte apo nje projekt i plote lokalizimi, ne jemi ketu per tju ndihmuar ne anglisht, spanjisht dhe boshnjakisht.',
+    "N\u00eb qoft\u00eb se ju nevojitet nj\u00eb perkthim i certifikuar, nj\u00eb interpretues i drejtp\u00ebrdrejt\u00eb apo nj\u00eb projekt i plot\u00eb lokalizimi, ne jemi k\u00ebtu p\u00ebr t'ju ndihmuar n\u00eb anglisht, spanjisht e boshnjakisht.",
 }
 
 const activeContactBody = computed(() => contactBodyCopy[currentLang.value])
@@ -449,7 +553,7 @@ onMounted(() => {
   )
 
   const elements =
-    appShell.value?.querySelectorAll('.service-card, .lang-card, .process-step, .stat') ?? []
+    appShell.value?.querySelectorAll('.service-card, .lang-card-animate, .process-step, .stat') ?? []
 
   elements.forEach((element) => {
     element.style.opacity = '0'
@@ -498,7 +602,7 @@ onBeforeUnmount(() => {
 
       <ul class="nav-links">
         <li>
-          <a href="#about">
+          <a href="about.html">
             <span class="content-en">About</span>
             <span class="content-es">Acerca</span>
             <span class="content-bs">O nama</span>
@@ -581,9 +685,8 @@ onBeforeUnmount(() => {
           <span class="content-sq">Shërbime të Përkthimit dhe Interpretimit</span>
         </p>
         <div class="hero-langs">
-          <span>English</span>
+          <span v-for="language in heroLanguages" :key="language" class="hero-lang-pill">{{ language }}</span>
           <span>Español</span>
-          <span>Bosanski</span>
         </div>
       </div>
 
@@ -715,6 +818,22 @@ onBeforeUnmount(() => {
               peshë dhe çdo përkthim është një akt besimi.
             </p>
 
+            <div class="about-copy-shared">
+              <p class="about-body">
+                BABIL Translation Services was established in 2016 by Qerim Ondozi, an experienced
+                translator and polyglot who holds a Professional Master's Degree in Translation and
+                Interpretation from the University of Prishtina. Together with his colleagues, now an
+                integral part of the BABIL team, Mr. Ondozi has been providing translation and
+                interpretation services since 2002.
+              </p>
+              <a class="about-read-more" href="/about.html">
+                <span class="content-en">Read More</span>
+                <span class="content-es">Leer Mas</span>
+                <span class="content-bs">Procitaj Vise</span>
+                <span class="content-sq">Lexo Me Shume</span>
+              </a>
+            </div>
+
             <div class="about-stats">
               <div class="stat">
                 <div class="stat-number">25+</div>
@@ -768,6 +887,7 @@ onBeforeUnmount(() => {
               <rect x="114" y="124" width="12" height="12" fill="#d8d4c4" />
             </svg>
           </div>
+
         </div>
       </div>
     </section>
@@ -933,7 +1053,7 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <section id="languages" class="languages">
+    <section id="languages-legacy" class="languages languages-legacy">
       <div class="section-inner">
         <div class="languages-layout">
           <div>
@@ -971,7 +1091,7 @@ onBeforeUnmount(() => {
             </p>
           </div>
 
-          <div class="lang-cards">
+          <div class="lang-cards lang-cards-legacy">
             <div class="lang-card">
               <span class="lang-flag">🇺🇸</span>
               <div class="lang-name">English</div>
@@ -1038,6 +1158,42 @@ onBeforeUnmount(() => {
               </p>
             </div>
 
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="languages" class="languages">
+      <div class="section-inner">
+        <div class="languages-layout">
+          <div class="languages-copy">
+            <div class="section-label">
+              <span class="content-en">Our Languages</span>
+              <span class="content-es">Nuestros Idiomas</span>
+              <span class="content-bs">Nasi Jezici</span>
+              <span class="content-sq">Gjuhet Tona</span>
+            </div>
+
+            <h2 class="lang-intro-heading-dynamic" v-html="activeLanguageSectionCopy.headingHtml"></h2>
+            <p class="lang-intro-body-dynamic">
+              {{ activeLanguageSectionCopy.body }}
+            </p>
+          </div>
+
+          <div class="lang-cards">
+            <article
+              v-for="(card, index) in languageCards"
+              :key="card.code"
+              class="lang-card lang-card-animate"
+              :style="{ animationDelay: `${index * 0.06}s` }"
+            >
+              <span class="lang-flag">{{ card.code }}</span>
+              <div class="lang-name">{{ card.name }}</div>
+              <span class="lang-native">{{ card.native }}</span>
+              <p class="lang-desc">
+                {{ card.descriptions[currentLang] }}
+              </p>
+            </article>
           </div>
         </div>
       </div>
