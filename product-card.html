@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Card - Add New Product</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Karla:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a1a1a;
+            --primary-light: #2d2d2d;
+            --accent: #c9a86a;
+            --accent-hover: #b89554;
+            --bg: #fafaf8;
+            --surface: #ffffff;
+            --surface-alt: #f5f2ec;
+            --border: #e5e5e0;
+            --border-strong: #d8d4ca;
+            --text: #1a1a1a;
+            --text-secondary: #666666;
+            --success: #3d6e3d;
+            --error: #c44536;
+            --shadow: rgba(0, 0, 0, 0.08);
+            --focus-ring: rgba(201, 168, 106, 0.18);
+            --radius-md: 14px;
+            --radius-lg: 24px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Karla', sans-serif;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, rgba(201, 168, 106, 0.14), transparent 28%),
+                linear-gradient(180deg, #fdfcf9 0%, var(--bg) 100%);
+            color: var(--text);
+            padding: 28px 18px 40px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-strong);
+            padding-bottom: 18px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 10px;
+        }
+
+        .header-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .header h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 40px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            line-height: 1.05;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 400;
+            max-width: 620px;
+        }
+
+        .product-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .card-section {
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 999px;
+        }
+
+        .section-copy {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 16px;
+            max-width: 680px;
+        }
+
+        .page-note {
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: rgba(201, 168, 106, 0.08);
+            border: 1px solid rgba(201, 168, 106, 0.18);
+            border-radius: 999px;
+            padding: 8px 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: var(--text);
+        }
+
+        .required {
+            color: var(--error);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="file"],
+        select,
+        textarea {
+            min-height: 44px;
+            padding: 10px 13px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            font-family: 'Karla', sans-serif;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            outline: none;
+            border-radius: var(--radius-md);
+            line-height: 1.4;
+        }
+
+        input[type="text"]:hover,
+        input[type="number"]:hover,
+        input[type="file"]:hover,
+        select:hover,
+        textarea:hover {
+            border-color: var(--border-strong);
+        }
+
+        input[type="text"]::placeholder,
+        input[type="number"]::placeholder,
+        textarea::placeholder {
+            color: #9a968d;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        input[type="file"]:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--focus-ring);
+            transform: translateY(-1px);
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231a1a1a' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 38px;
+        }
+
+        select:disabled {
+            background-color: #f5f4ef;
+            color: #9a968d;
+            cursor: not-allowed;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .variants-container {
+            background: var(--surface-alt);
+            padding: 18px;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            margin-top: 12px;
+        }
+
+        .variant-item {
+            background: var(--surface);
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+            position: relative;
+            animation: slideIn 0.3s ease;
+            border-radius: 18px;
+            box-shadow: 0 8px 22px rgba(0, 0, 0, 0.04);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .variant-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .variant-title {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .remove-variant {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 7px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-radius: 999px;
+        }
+
+        .remove-variant:hover {
+            opacity: 0.8;
+        }
+
+        .size-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .size-option {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            flex: 1;
+            min-width: 130px;
+            border-radius: var(--radius-md);
+        }
+
+        .size-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .size-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        .size-fields {
+            display: flex;
+            gap: 8px;
+        }
+
+        .size-fields input {
+            flex: 1;
+            min-height: 32px;
+            padding: 6px 8px;
+            font-size: 13px;
+            border-radius: 10px;
+        }
+
+        #qty-1-3XL,
+        #price-1-3XL {
+            flex: 0 0 calc(25% - 4px);
+            width: calc(25% - 4px);
+            max-width: calc(25% - 4px);
+            min-width: 0;
+        }
+
+        .image-upload-area {
+            border: 2px dashed var(--border);
+            padding: 28px 22px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--surface-alt);
+            border-radius: 18px;
+        }
+
+        .image-upload-area:hover {
+            border-color: var(--accent);
+            background: var(--surface);
+        }
+
+        .image-upload-area.dragover {
+            border-color: var(--accent);
+            background: rgba(201, 168, 106, 0.1);
+        }
+
+        .upload-icon {
+            width: 54px;
+            height: 54px;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 12px;
+            border-radius: 50%;
+            font-size: 30px;
+            font-weight: 600;
+            color: var(--accent);
+            background: rgba(201, 168, 106, 0.12);
+        }
+
+        .image-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .image-preview-item {
+            position: relative;
+            aspect-ratio: 1;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            border-radius: 16px;
+        }
+
+        .image-preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--error);
+            color: white;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .remove-image:hover {
+            transform: scale(1.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            padding: 24px 28px 28px;
+            background: linear-gradient(180deg, rgba(245, 242, 236, 0.45), rgba(245, 242, 236, 0.9));
+        }
+
+        .btn {
+            padding: 12px 22px;
+            font-family: 'Karla', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            border-radius: 999px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-add {
+            background: var(--accent);
+            color: white;
+            margin-top: 12px;
+        }
+
+        .btn-add:hover {
+            background: var(--accent-hover);
+        }
+
+        .category-specific {
+            display: none;
+        }
+
+        .category-specific.active {
+            display: grid;
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-preview {
+            width: 44px;
+            height: 44px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        input[type="color"] {
+            opacity: 0;
+            position: absolute;
+            pointer-events: none;
+        }
+
+        .spec-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px 18px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 18px 12px 32px;
+            }
+
+            .header-top {
+                flex-direction: column;
+            }
+
+            .header h1 {
+                font-size: 32px;
+            }
+
+            .card-section {
+                padding: 20px 18px;
+            }
+
+            .section-title {
+                font-size: 22px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column-reverse;
+                padding: 20px 18px 22px;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .image-upload-area {
+                padding: 22px 16px;
+            }
+
+            .size-fields {
+                flex-direction: column;
+            }
+
+            .spec-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .hint {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-style: italic;
+            margin-top: 2px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 10px;
+            background: var(--accent);
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-top">
+                <div>
+                    <h1>Add New Product</h1>
+                    <p>Start with the main product details, then add variants, images, and a short description.</p>
+                </div>
+                <div class="header-meta">
+                    <span class="badge">Required fields first</span>
+                    <span class="badge">Auto-updating options</span>
+                </div>
+            </div>
+            <div class="page-note">Choose the category early so the correct subcategory, type, and size options appear automatically.</div>
+        </div>
+
+        <div class="product-card">
+            <!-- Basic Information -->
+            <div class="card-section">
+                <h2 class="section-title">Basic Information</h2>
+                <p class="section-copy">Keep this part quick and simple. Once the category is selected, the next dropdowns will unlock with the right options.</p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Stock ID <span class="required">*</span></label>
+                        <input type="text" id="stockId" placeholder="e.g., STK-001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Article/SKU <span class="required">*</span></label>
+                        <input type="text" id="sku" placeholder="e.g., SHIRT-BLU-M" required>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Product Title <span class="required">*</span></label>
+                        <input type="text" id="productTitle" placeholder="e.g., Premium Cotton T-Shirt" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Base Price <span class="required">*</span></label>
+                        <input type="number" id="basePrice" placeholder="0.00" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Main Category <span class="required">*</span></label>
+                        <select id="mainCategory" required>
+                            <option value="">Select Category</option>
+                            <option value="clothing">Clothing & Apparel</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="footwear">Footwear</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="home">Home & Living</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Subcategory <span class="required">*</span></label>
+                        <select id="subCategory" required disabled>
+                            <option value="">Select a category first</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Product Type <span class="required">*</span></label>
+                        <select id="productType" required disabled>
+                            <option value="">Select a subcategory first</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category-Specific Fields: Clothing -->
+            <div class="card-section category-specific" id="clothingFields">
+                <h2 class="section-title">Clothing Specifications</h2>
+                <p class="section-copy">Only the extra details that help shoppers understand fit and care.</p>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Fabric Material</label>
+                        <input type="text" id="fabricMaterial" placeholder="e.g., 100% Cotton">
+                    </div>
+                    <div class="form-group">
+                        <label>Care Instructions</label>
+                        <input type="text" id="careInstructions" placeholder="e.g., Machine Wash Cold">
+                    </div>
+                    <div class="form-group">
+                        <label>Fit Type</label>
+                        <select id="fitType">
+                            <option value="">Select Fit</option>
+                            <option value="slim">Slim Fit</option>
+                            <option value="regular">Regular Fit</option>
+                            <option value="relaxed">Relaxed Fit</option>
+                            <option value="oversized">Oversized</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Season</label>
+                        <select id="season">
+                            <option value="">Select Season</option>
+                            <option value="spring">Spring</option>
+                            <option value="summer">Summer</option>
+                            <option value="fall">Fall/Autumn</option>
+                            <option value="winter">Winter</option>
+                            <option value="allseason">All Season</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category-Specific Fields: Electronics -->
+            <div class="card-section category-specific" id="electronicsFields">
+                <h2 class="section-title">Electronics Specifications</h2>
+                <p class="section-copy">Use the most important specs first so the product stays easy to scan.</p>
+                <div class="form-grid spec-grid">
+                    <div class="form-group">
+                        <label>Brand</label>
+                        <input type="text" id="brand" placeholder="e.g., Samsung">
+                    </div>
+                    <div class="form-group">
+                        <label>Model Number</label>
+                        <input type="text" id="modelNumber" placeholder="e.g., SM-G998B">
+                    </div>
+                    <div class="form-group">
+                        <label>RAM</label>
+                        <select id="ram">
+                            <option value="">Select RAM</option>
+                            <option value="2GB">2GB</option>
+                            <option value="4GB">4GB</option>
+                            <option value="6GB">6GB</option>
+                            <option value="8GB">8GB</option>
+                            <option value="12GB">12GB</option>
+                            <option value="16GB">16GB</option>
+                            <option value="32GB">32GB</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Storage (ROM)</label>
+                        <select id="storage">
+                            <option value="">Select Storage</option>
+                            <option value="32GB">32GB</option>
+                            <option value="64GB">64GB</option>
+                            <option value="128GB">128GB</option>
+                            <option value="256GB">256GB</option>
+                            <option value="512GB">512GB</option>
+                            <option value="1TB">1TB</option>
+                            <option value="2TB">2TB</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Screen Size</label>
+                        <input type="text" id="screenSize" placeholder="e.g., 6.7 inches">
+                    </div>
+                    <div class="form-group">
+                        <label>Battery Capacity</label>
+                        <input type="text" id="battery" placeholder="e.g., 5000mAh">
+                    </div>
+                    <div class="form-group">
+                        <label>Processor</label>
+                        <input type="text" id="processor" placeholder="e.g., Snapdragon 888">
+                    </div>
+                    <div class="form-group">
+                        <label>Operating System</label>
+                        <input type="text" id="os" placeholder="e.g., Android 12">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Warranty Period</label>
+                        <input type="text" id="warranty" placeholder="e.g., 2 Years">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Variants Section -->
+            <div class="card-section">
+                <h2 class="section-title">Product Variants</h2>
+                <p class="section-copy">Add one variant per color. If the selected category supports sizes, inventory fields will show up automatically.</p>
+                
+                <div id="variantsContainer" class="variants-container">
+                    <!-- Variants will be added dynamically -->
+                </div>
+
+                <button class="btn btn-add" onclick="addVariant()">+ Add Color Variant</button>
+            </div>
+
+            <!-- Product Images -->
+            <div class="card-section">
+                <h2 class="section-title">Product Images</h2>
+                <p class="section-copy">Upload the clearest product photos first so the preview grid stays easy to review.</p>
+                <div class="image-upload-area" id="imageUploadArea" onclick="document.getElementById('imageInput').click()">
+                    <div class="upload-icon">📷</div>
+                    <p style="font-weight: 600; margin-bottom: 8px;">Click or drag product images to upload</p>
+                    <p class="hint">Supports: JPG, PNG, WebP (Max 5MB each)</p>
+                    <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+                </div>
+                <div class="image-preview-grid" id="imagePreviewGrid"></div>
+            </div>
+
+            <!-- Description -->
+            <div class="card-section">
+                <h2 class="section-title">Product Description</h2>
+                <p class="section-copy">Keep this short, clear, and easy to scan. A few strong details usually work better than a long paragraph.</p>
+                <div class="form-group">
+                    <label>Preview/Description</label>
+                    <textarea id="description" placeholder="Enter a detailed description of the product, including features, benefits, and specifications..."></textarea>
+                    <p class="hint">Provide a comprehensive description to help customers understand the product better.</p>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="button-group">
+                <button class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+                <button class="btn btn-primary" onclick="saveProduct()">Save Product</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let variantCounter = 0;
+        let uploadedImages = [];
+        const mainCategorySelect = document.getElementById('mainCategory');
+        const subCategorySelect = document.getElementById('subCategory');
+        const productTypeSelect = document.getElementById('productType');
+
+        function resetSelectOptions(select, placeholder, disabled = true) {
+            select.innerHTML = `<option value="">${placeholder}</option>`;
+            select.disabled = disabled;
+        }
+
+        // Category and subcategory mapping
+        const categoryData = {
+            clothing: {
+                subcategories: ['Shirts', 'Pants', 'Dresses', 'Jackets', 'Activewear', 'Underwear'],
+                types: {
+                    'Shirts': ['T-Shirt', 'Polo', 'Dress Shirt', 'Casual Shirt', 'Henley'],
+                    'Pants': ['Jeans', 'Chinos', 'Trousers', 'Joggers', 'Shorts'],
+                    'Dresses': ['Maxi Dress', 'Mini Dress', 'Cocktail Dress', 'Casual Dress'],
+                    'Jackets': ['Blazer', 'Bomber', 'Denim Jacket', 'Windbreaker', 'Parka'],
+                    'Activewear': ['Sports Bra', 'Leggings', 'Tank Top', 'Track Pants'],
+                    'Underwear': ['Boxers', 'Briefs', 'Bras', 'Socks']
+                },
+                sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL']
+            },
+            electronics: {
+                subcategories: ['Smartphones', 'Laptops', 'Tablets', 'Headphones', 'Smartwatches', 'Cameras'],
+                types: {
+                    'Smartphones': ['Android', 'iOS', 'Feature Phone'],
+                    'Laptops': ['Gaming', 'Business', 'Ultrabook', '2-in-1', 'Chromebook'],
+                    'Tablets': ['iPad', 'Android Tablet', 'Windows Tablet'],
+                    'Headphones': ['Over-Ear', 'In-Ear', 'True Wireless', 'Gaming Headset'],
+                    'Smartwatches': ['Fitness Tracker', 'Smart Watch', 'Hybrid Watch'],
+                    'Cameras': ['DSLR', 'Mirrorless', 'Point & Shoot', 'Action Camera']
+                },
+                sizes: null
+            },
+            footwear: {
+                subcategories: ['Sneakers', 'Boots', 'Sandals', 'Formal Shoes', 'Sports Shoes'],
+                types: {
+                    'Sneakers': ['Casual', 'High-Top', 'Low-Top', 'Slip-On'],
+                    'Boots': ['Ankle Boots', 'Chelsea', 'Combat', 'Hiking'],
+                    'Sandals': ['Slides', 'Flip Flops', 'Sport Sandals'],
+                    'Formal Shoes': ['Oxfords', 'Loafers', 'Monk Strap', 'Derby'],
+                    'Sports Shoes': ['Running', 'Training', 'Basketball', 'Tennis']
+                },
+                sizes: ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12']
+            },
+            accessories: {
+                subcategories: ['Bags', 'Watches', 'Jewelry', 'Belts', 'Hats', 'Sunglasses'],
+                types: {
+                    'Bags': ['Backpack', 'Tote', 'Messenger', 'Clutch', 'Duffel'],
+                    'Watches': ['Analog', 'Digital', 'Chronograph', 'Dress Watch'],
+                    'Jewelry': ['Necklace', 'Bracelet', 'Earrings', 'Ring'],
+                    'Belts': ['Casual', 'Formal', 'Reversible'],
+                    'Hats': ['Baseball Cap', 'Beanie', 'Fedora', 'Bucket Hat'],
+                    'Sunglasses': ['Aviator', 'Wayfarer', 'Round', 'Cat-Eye']
+                },
+                sizes: ['One Size', 'S', 'M', 'L']
+            },
+            home: {
+                subcategories: ['Furniture', 'Decor', 'Kitchen', 'Bedding', 'Lighting'],
+                types: {
+                    'Furniture': ['Sofa', 'Chair', 'Table', 'Bed', 'Storage'],
+                    'Decor': ['Wall Art', 'Vase', 'Cushion', 'Rug', 'Mirror'],
+                    'Kitchen': ['Cookware', 'Dinnerware', 'Utensils', 'Appliances'],
+                    'Bedding': ['Sheets', 'Comforter', 'Pillow', 'Blanket'],
+                    'Lighting': ['Ceiling Light', 'Table Lamp', 'Floor Lamp', 'Wall Sconce']
+                },
+                sizes: null
+            }
+        };
+
+        // Initialize category change handler
+        mainCategorySelect.addEventListener('change', function() {
+            const category = this.value;
+            
+            // Reset dependent fields
+            resetSelectOptions(subCategorySelect, category ? 'Select Subcategory' : 'Select a category first', !category);
+            resetSelectOptions(productTypeSelect, 'Select a subcategory first', true);
+            
+            // Hide all category-specific sections
+            document.querySelectorAll('.category-specific').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            if (category && categoryData[category]) {
+                // Populate subcategories
+                categoryData[category].subcategories.forEach(sub => {
+                    const option = document.createElement('option');
+                    option.value = sub.toLowerCase().replace(/\s+/g, '-');
+                    option.textContent = sub;
+                    subCategorySelect.appendChild(option);
+                });
+                
+                // Show category-specific fields
+                if (category === 'clothing') {
+                    document.getElementById('clothingFields').classList.add('active');
+                } else if (category === 'electronics') {
+                    document.getElementById('electronicsFields').classList.add('active');
+                }
+            }
+        });
+
+        // Subcategory change handler
+        subCategorySelect.addEventListener('change', function() {
+            const category = mainCategorySelect.value;
+            const subCategory = this.value;
+            
+            resetSelectOptions(productTypeSelect, subCategory ? 'Select Type' : 'Select a subcategory first', !subCategory);
+            
+            if (category && subCategory && categoryData[category]) {
+                const subCategoryName = this.options[this.selectedIndex].text;
+                const types = categoryData[category].types[subCategoryName];
+                
+                if (types) {
+                    types.forEach(type => {
+                        const option = document.createElement('option');
+                        option.value = type.toLowerCase().replace(/\s+/g, '-');
+                        option.textContent = type;
+                        productTypeSelect.appendChild(option);
+                    });
+
+                    productTypeSelect.disabled = false;
+                }
+            }
+        });
+
+        resetSelectOptions(subCategorySelect, 'Select a category first', true);
+        resetSelectOptions(productTypeSelect, 'Select a subcategory first', true);
+        document.querySelector('.upload-icon').textContent = '+';
+
+        function addVariant() {
+            variantCounter++;
+            const category = mainCategorySelect.value;
+            const sizes = category && categoryData[category] ? categoryData[category].sizes : null;
+            
+            const variantHTML = `
+                <div class="variant-item" id="variant-${variantCounter}">
+                    <div class="variant-header">
+                        <span class="variant-title">Color Variant #${variantCounter}</span>
+                        <button class="remove-variant" onclick="removeVariant(${variantCounter})">Remove</button>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Color Name</label>
+                            <input type="text" id="colorName-${variantCounter}" placeholder="e.g., Navy Blue">
+                        </div>
+                        <div class="form-group">
+                            <label>Color Code</label>
+                            <div class="color-picker-wrapper">
+                                <div class="color-preview" id="colorPreview-${variantCounter}" onclick="document.getElementById('colorPicker-${variantCounter}').click()" style="background-color: #000000;"></div>
+                                <input type="color" id="colorPicker-${variantCounter}" value="#000000">
+                                <input type="text" id="colorHex-${variantCounter}" value="#000000" placeholder="#000000" style="flex: 1;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Variant SKU</label>
+                            <input type="text" id="variantSku-${variantCounter}" placeholder="e.g., SHIRT-BLU-001">
+                        </div>
+                        <div class="form-group">
+                            <label>Variant Image</label>
+                            <input type="file" id="variantImage-${variantCounter}" accept="image/*">
+                        </div>
+                    </div>
+                    ${sizes ? `
+                        <div style="margin-top: 20px;">
+                            <label style="display: block; margin-bottom: 12px;">Available Sizes & Inventory</label>
+                            <div class="size-options" id="sizes-${variantCounter}">
+                                ${sizes.map(size => `
+                                    <div class="size-option">
+                                        <label class="size-checkbox">
+                                            <input type="checkbox" id="size-${variantCounter}-${size}" onchange="toggleSizeFields(${variantCounter}, '${size}')">
+                                            ${size}
+                                        </label>
+                                        <div class="size-fields" id="fields-${variantCounter}-${size}" style="display: none;">
+                                            <input type="number" placeholder="Qty" min="0" id="qty-${variantCounter}-${size}">
+                                            <input type="number" placeholder="Price" step="0.01" min="0" id="price-${variantCounter}-${size}">
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : `
+                        <div class="form-grid" style="margin-top: 20px;">
+                            <div class="form-group">
+                                <label>Quantity</label>
+                                <input type="number" id="qty-${variantCounter}" placeholder="0" min="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Price</label>
+                                <input type="number" id="price-${variantCounter}" placeholder="0.00" step="0.01" min="0">
+                            </div>
+                        </div>
+                    `}
+                </div>
+            `;
+            
+            document.getElementById('variantsContainer').insertAdjacentHTML('beforeend', variantHTML);
+            document.getElementById(`variant-${variantCounter}`).scrollIntoView({
+                behavior: 'smooth',
+                block: 'nearest'
+            });
+            
+            // Setup color picker events
+            const colorPicker = document.getElementById(`colorPicker-${variantCounter}`);
+            const colorHex = document.getElementById(`colorHex-${variantCounter}`);
+            const colorPreview = document.getElementById(`colorPreview-${variantCounter}`);
+            
+            colorPicker.addEventListener('input', function() {
+                const color = this.value;
+                colorHex.value = color;
+                colorPreview.style.backgroundColor = color;
+            });
+            
+            colorHex.addEventListener('input', function() {
+                const color = this.value;
+                if (/^#[0-9A-F]{6}$/i.test(color)) {
+                    colorPicker.value = color;
+                    colorPreview.style.backgroundColor = color;
+                }
+            });
+        }
+
+        function removeVariant(id) {
+            const variant = document.getElementById(`variant-${id}`);
+            if (variant) {
+                variant.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => variant.remove(), 300);
+            }
+        }
+
+        function toggleSizeFields(variantId, size) {
+            const checkbox = document.getElementById(`size-${variantId}-${size}`);
+            const fields = document.getElementById(`fields-${variantId}-${size}`);
+            fields.style.display = checkbox.checked ? 'flex' : 'none';
+        }
+
+        // Image upload handling
+        const imageInput = document.getElementById('imageInput');
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const imagePreviewGrid = document.getElementById('imagePreviewGrid');
+
+        imageInput.addEventListener('change', function(e) {
+            handleFiles(e.target.files);
+        });
+
+        // Drag and drop
+        imageUploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        imageUploadArea.addEventListener('dragleave', function() {
+            this.classList.remove('dragover');
+        });
+
+        imageUploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+
+        function handleFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/') && file.size <= 5 * 1024 * 1024) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const imageId = Date.now() + Math.random();
+                        uploadedImages.push({ id: imageId, data: e.target.result });
+                        displayImage(imageId, e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('Please upload images only (max 5MB each)');
+                }
+            });
+        }
+
+        function displayImage(id, src) {
+            const imageHTML = `
+                <div class="image-preview-item" id="image-${id}">
+                    <img src="${src}" alt="Product Image">
+                    <button class="remove-image" onclick="removeImage(${id})">×</button>
+                </div>
+            `;
+            imagePreviewGrid.insertAdjacentHTML('beforeend', imageHTML);
+        }
+
+        function displayImage(id, src) {
+            const imageHTML = [
+                `<div class="image-preview-item" id="image-${id}">`,
+                `    <img src="${src}" alt="Product Image">`,
+                `    <button class="remove-image" onclick="removeImage(${id})">&times;</button>`,
+                `</div>`
+            ].join('');
+
+            imagePreviewGrid.insertAdjacentHTML('beforeend', imageHTML);
+        }
+
+        function removeImage(id) {
+            uploadedImages = uploadedImages.filter(img => img.id !== id);
+            document.getElementById(`image-${id}`).remove();
+        }
+
+        function clearForm() {
+            if (confirm('Are you sure you want to clear all form data? This action cannot be undone.')) {
+                document.querySelector('.product-card').querySelectorAll('input, select, textarea').forEach(field => {
+                    if (field.type === 'checkbox') {
+                        field.checked = false;
+                    } else if (field.type === 'color') {
+                        field.value = '#000000';
+                    } else {
+                        field.value = '';
+                    }
+                });
+                
+                document.getElementById('variantsContainer').innerHTML = '';
+                imagePreviewGrid.innerHTML = '';
+                uploadedImages = [];
+                variantCounter = 0;
+                
+                document.querySelectorAll('.category-specific').forEach(section => {
+                    section.classList.remove('active');
+                });
+
+                resetSelectOptions(subCategorySelect, 'Select a category first', true);
+                resetSelectOptions(productTypeSelect, 'Select a subcategory first', true);
+            }
+        }
+
+        function saveProduct() {
+            // Collect all form data
+            const productData = {
+                basicInfo: {
+                    stockId: document.getElementById('stockId').value,
+                    sku: document.getElementById('sku').value,
+                    title: document.getElementById('productTitle').value,
+                    basePrice: document.getElementById('basePrice').value,
+                    mainCategory: document.getElementById('mainCategory').value,
+                    subCategory: document.getElementById('subCategory').value,
+                    productType: document.getElementById('productType').value
+                },
+                categorySpecific: {},
+                variants: [],
+                images: uploadedImages,
+                description: document.getElementById('description').value
+            };
+
+            // Validate required fields
+            if (!productData.basicInfo.stockId || !productData.basicInfo.sku || !productData.basicInfo.title || 
+                !productData.basicInfo.basePrice || !productData.basicInfo.mainCategory) {
+                alert('Please fill in all required fields (marked with *)');
+                return;
+            }
+
+            // Collect category-specific data
+            const category = document.getElementById('mainCategory').value;
+            if (category === 'clothing') {
+                productData.categorySpecific = {
+                    fabricMaterial: document.getElementById('fabricMaterial').value,
+                    careInstructions: document.getElementById('careInstructions').value,
+                    fitType: document.getElementById('fitType').value,
+                    season: document.getElementById('season').value
+                };
+            } else if (category === 'electronics') {
+                productData.categorySpecific = {
+                    brand: document.getElementById('brand').value,
+                    modelNumber: document.getElementById('modelNumber').value,
+                    ram: document.getElementById('ram').value,
+                    storage: document.getElementById('storage').value,
+                    screenSize: document.getElementById('screenSize').value,
+                    battery: document.getElementById('battery').value,
+                    processor: document.getElementById('processor').value,
+                    os: document.getElementById('os').value,
+                    warranty: document.getElementById('warranty').value
+                };
+            }
+
+            // Collect variant data
+            const variantElements = document.querySelectorAll('.variant-item');
+            variantElements.forEach((variantEl, index) => {
+                const variantId = variantEl.id.split('-')[1];
+                const variant = {
+                    colorName: document.getElementById(`colorName-${variantId}`).value,
+                    colorCode: document.getElementById(`colorHex-${variantId}`).value,
+                    variantSku: document.getElementById(`variantSku-${variantId}`).value,
+                    sizes: []
+                };
+
+                // Check if category has sizes
+                const sizes = category && categoryData[category] ? categoryData[category].sizes : null;
+                
+                if (sizes) {
+                    sizes.forEach(size => {
+                        const checkbox = document.getElementById(`size-${variantId}-${size}`);
+                        if (checkbox && checkbox.checked) {
+                            variant.sizes.push({
+                                size: size,
+                                quantity: document.getElementById(`qty-${variantId}-${size}`).value,
+                                price: document.getElementById(`price-${variantId}-${size}`).value
+                            });
+                        }
+                    });
+                } else {
+                    variant.quantity = document.getElementById(`qty-${variantId}`).value;
+                    variant.price = document.getElementById(`price-${variantId}`).value;
+                }
+
+                productData.variants.push(variant);
+            });
+
+            // Display collected data (in real application, this would be sent to a server)
+            console.log('Product Data:', productData);
+            alert('Product saved successfully!\n\nCheck the browser console to see the collected data.');
+            
+            // Optionally, you could download as JSON
+            // downloadJSON(productData);
+        }
+
+        function downloadJSON(data) {
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `product-${data.basicInfo.sku}-${Date.now()}.json`;
+            link.click();
+        }
+
+        // Add slideOut animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideOut {
+                to {
+                    opacity: 0;
+                    transform: translateX(-20px);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
