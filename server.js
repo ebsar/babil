@@ -14,21 +14,31 @@ const DIST_DIR = path.join(__dirname, 'dist')
 const DIST_INDEX = path.join(DIST_DIR, 'index.html')
 const DATA_DIR = path.join(__dirname, 'data')
 const SUBMISSIONS_FILE = path.join(DATA_DIR, 'contact-submissions.ndjson')
-const DEFAULT_TO_EMAIL = 'info@babiltranslation.com'
+const DEFAULT_TO_EMAIL = 'info@hidrotoni.com'
 
 const serviceLabels = {
-  'document-translation': 'Document Translation',
-  'live-interpretation': 'Live Interpretation',
-  'certified-translation': 'Certified Translation',
-  'proofreading-editing': 'Proofreading & Editing',
-  'business-localization': 'Business Localization',
-  'legal-services': 'Legal Services',
+  'drain-cleaning': 'Plumbing & Drain Services',
+  'water-pipe-installation': 'Water & Pipe Installation Services',
+  'residential-plumbing': 'Residential Plumbing',
+  'commercial-plumbing': 'Commercial Plumbing',
+  'emergency-repairs': 'Emergency Leak or Backup',
+  'water-heater-service': 'Water Heater / Fixture Service',
+}
+
+const propertyTypeLabels = {
+  residential: 'Residential',
+  commercial: 'Commercial',
+}
+
+const urgencyLabels = {
+  emergency: 'Emergency request',
+  'same-day': 'As soon as possible',
+  'this-week': 'This week',
+  planning: 'Planning a project',
 }
 
 const languageLabels = {
   en: 'English',
-  es: 'Spanish',
-  bs: 'Bosnian',
   sq: 'Albanian',
 }
 
@@ -36,16 +46,19 @@ const contactSchema = z.object({
   firstName: z.string().trim().min(1).max(80),
   lastName: z.string().trim().min(1).max(80),
   email: z.string().trim().email().max(254),
+  phone: z.string().trim().max(40).optional().default(''),
   service: z.enum([
-    'document-translation',
-    'live-interpretation',
-    'certified-translation',
-    'proofreading-editing',
-    'business-localization',
-    'legal-services',
+    'drain-cleaning',
+    'water-pipe-installation',
+    'residential-plumbing',
+    'commercial-plumbing',
+    'emergency-repairs',
+    'water-heater-service',
   ]),
-  message: z.string().trim().min(20).max(2500),
-  language: z.enum(['en', 'es', 'bs', 'sq']),
+  propertyType: z.enum(['residential', 'commercial']).default('residential'),
+  urgency: z.enum(['emergency', 'same-day', 'this-week', 'planning']).default('same-day'),
+  language: z.enum(['en', 'sq']).default('en'),
+  message: z.string().trim().min(10).max(2500),
   website: z.string().optional().default(''),
 })
 
@@ -101,13 +114,16 @@ async function sendNotification(submission) {
     to,
     from,
     replyTo: submission.email,
-    subject: `New Babil contact request: ${submission.firstName} ${submission.lastName}`,
+    subject: `New HIDRO TONI service request: ${submission.firstName} ${submission.lastName}`,
     text: [
       `First name: ${submission.firstName}`,
       `Last name: ${submission.lastName}`,
       `Email: ${submission.email}`,
-      `Language: ${languageLabels[submission.language]}`,
+      `Phone: ${submission.phone || 'Not provided'}`,
       `Service: ${serviceLabels[submission.service]}`,
+      `Property type: ${propertyTypeLabels[submission.propertyType]}`,
+      `Timing: ${urgencyLabels[submission.urgency]}`,
+      `Website language: ${languageLabels[submission.language]}`,
       '',
       'Message:',
       submission.message,
@@ -198,5 +214,5 @@ if (distExists) {
 }
 
 app.listen(PORT, () => {
-  console.log(`Contact server running at http://localhost:${PORT}`)
+  console.log(`HIDRO TONI contact server running at http://localhost:${PORT}`)
 })

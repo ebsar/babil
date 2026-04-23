@@ -1,1556 +1,656 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
-const appShell = ref(null)
-const contactForm = ref(null)
 const currentLang = ref('sq')
-const showLoader = ref(true)
 
-const heroScript = `𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹
-𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾
-𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾 𒌷 𒀭`
-
-const quoteScript = `𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹
-𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾`
-
-const serviceOptions = {
-  en: [
-    'Document Translation',
-    'Live Interpretation',
-    'Certified Translation',
-    'Business Localization',
-    'Legal Services',
-  ],
-  es: [
-    'Traducción de Documentos',
-    'Interpretación en Vivo',
-    'Traducción Certificada',
-    'Localización Empresarial',
-    'Servicios Legales',
-  ],
-  bs: [
-    'Prevođenje Dokumenata',
-    'Tumačenje Uživo',
-    'Ovjereni Prijevod',
-    'Poslovna Lokalizacija',
-    'Pravne Usluge',
-  ],
-  sq: [
-    'Përkthim Dokumentesh',
-    'Interpretim i Drejtpërdrejtë',
-    'Përkthim i Certifikuar',
-    'Lokalizim Biznesi',
-    'Shërbime Ligjore',
-  ],
-}
-
-const serviceCatalog = [
-  {
-    value: 'document-translation',
-    labels: {
-      en: 'Document Translation',
-      es: 'Traducci\u00f3n de Documentos',
-      bs: 'Prevo\u0111enje Dokumenata',
-      sq: 'P\u00ebrkthim Dokumentesh',
-    },
-  },
-  {
-    value: 'live-interpretation',
-    labels: {
-      en: 'Live Interpretation',
-      es: 'Interpretaci\u00f3n en Vivo',
-      bs: 'Tuma\u010denje U\u017eivo',
-      sq: 'Interpretim i Drejtp\u00ebrdrejt\u00eb',
-    },
-  },
-  {
-    value: 'certified-translation',
-    labels: {
-      en: 'Certified Translation',
-      es: 'Traducci\u00f3n Certificada',
-      bs: 'Ovjereni Prijevod',
-      sq: 'P\u00ebrkthim i Certifikuar',
-    },
-  },
-  {
-    value: 'proofreading-editing',
-    labels: {
-      en: 'Proofreading & Editing',
-      es: 'Correcci\u00f3n y Edici\u00f3n',
-      bs: 'Lektura i Redaktura',
-      sq: 'Lektur\u00eb dhe Redaktim Dokumentesh',
-    },
-  },
-  {
-    value: 'business-localization',
-    labels: {
-      en: 'Business Localization',
-      es: 'Localizaci\u00f3n Empresarial',
-      bs: 'Poslovna Lokalizacija',
-      sq: 'Lokalizim Biznesi',
-    },
-  },
-  {
-    value: 'legal-services',
-    labels: {
-      en: 'Legal Services',
-      es: 'Servicios Legales',
-      bs: 'Pravne Usluge',
-      sq: 'Sh\u00ebrbime Ligjore',
-    },
-  },
-]
-
-const currentServiceOptions = computed(() =>
-  serviceCatalog.map((service) => ({
-    value: service.value,
-    label: service.labels[currentLang.value],
-  })),
-)
-
-const formspreeEndpoint = 'https://formspree.io/f/xrerapwb'
-
-const contactCopy = {
+const content = {
   en: {
-    servicePlaceholder: 'Select a service',
-    messagePlaceholder: 'Tell us what you need, the language pair, and your timeline.',
-    submitIdle: 'Send Request \u2192',
-    submitSending: 'Sending...',
-    success: 'Your request has been received. We will reply as soon as possible.',
-    error: 'We could not send your request right now. Please try again or email us directly.',
-  },
-  es: {
-    servicePlaceholder: 'Seleccione un servicio',
-    messagePlaceholder:
-      'Cu\u00e9ntenos qu\u00e9 necesita, la combinaci\u00f3n de idiomas y su plazo ideal.',
-    submitIdle: 'Enviar Solicitud \u2192',
-    submitSending: 'Enviando...',
-    success: 'Hemos recibido su solicitud. Le responderemos lo antes posible.',
-    error:
-      'No pudimos enviar su solicitud ahora mismo. Intente de nuevo o escr\u00edbanos por correo.',
-  },
-  bs: {
-    servicePlaceholder: 'Odaberite uslugu',
-    messagePlaceholder: 'Recite nam \u0161ta vam treba, jezi\u010dki par i \u017eeljeni rok.',
-    submitIdle: 'Po\u0161alji Zahtjev \u2192',
-    submitSending: 'Slanje...',
-    success: 'Primili smo va\u0161 zahtjev. Odgovorit \u0107emo vam \u0161to prije.',
-    error:
-      'Trenutno nismo mogli poslati va\u0161 zahtjev. Poku\u0161ajte ponovo ili nam pi\u0161ite e-po\u0161tom.',
+    documentLang: 'en',
+    logoLabel: 'HIDRO TONI home',
+    navLabel: 'Primary navigation',
+    nav: {
+      services: 'Services',
+      process: 'Process',
+      contact: 'Contact',
+    },
+    headerCta: 'Request Service',
+    languageLabel: 'Language',
+    hero: {
+      eyebrow: 'Plumbing, drains, water lines, and pipe work',
+      title: 'Clean plumbing service for homes and businesses.',
+      lede:
+        'HIDRO TONI helps with drain problems, pipe installation, water service, and reliable residential or commercial plumbing support.',
+      primaryCta: 'Book A Service Visit',
+      secondaryCta: 'See Services',
+      proofLabel: 'Service highlights',
+      cardLabel: 'HIDRO TONI service card',
+      cardTop: 'Service Call',
+    },
+    proofPoints: [
+      { value: 'Rapid', label: 'response for urgent leaks and backups' },
+      { value: 'Clean', label: 'work areas protected from start to finish' },
+      { value: 'Clear', label: 'scope, pricing, and next steps before work begins' },
+    ],
+    servicesEyebrow: 'What We Do',
+    servicesTitle: 'Three core services, one dependable plumbing partner.',
+    services: [
+      {
+        id: 'drain-cleaning',
+        label: 'Plumbing & Drain Services',
+        eyebrow: 'Blocked drains, leaks, repairs',
+        description:
+          'Fast help for clogs, slow drains, pipe leaks, toilet issues, fixture repairs, and everyday plumbing problems.',
+        points: ['Drain cleaning', 'Leak detection', 'Toilet and faucet repairs', 'Preventive maintenance'],
+      },
+      {
+        id: 'water-pipe-installation',
+        label: 'Water & Pipe Installation Services',
+        eyebrow: 'Clean installs, steady pressure',
+        description:
+          'Reliable water line, pipe, valve, and fixture installation for remodels, upgrades, and new plumbing work.',
+        points: ['Water line installation', 'Pipe replacement', 'Fixture setup', 'Pressure troubleshooting'],
+      },
+      {
+        id: 'residential-commercial',
+        label: 'Residential & Commercial Plumbing',
+        eyebrow: 'Homes, shops, offices',
+        description:
+          'Professional plumbing support for homeowners, landlords, restaurants, offices, retail spaces, and property managers.',
+        points: ['Home plumbing service', 'Commercial maintenance', 'Tenant-ready repairs', 'Scheduled project work'],
+      },
+    ],
+    emergency: {
+      eyebrow: 'Urgent Plumbing Help',
+      title: 'Leaks, backups, and pressure issues need a fast, organized response.',
+      text:
+        'From a backed-up drain to a burst pipe, HIDRO TONI focuses on stopping damage, restoring flow, and explaining the repair clearly before work begins.',
+      cta: 'Send An Urgent Request',
+    },
+    commonRequestsEyebrow: 'Common Requests',
+    serviceAreas: [
+      'Drain cleaning and clog removal',
+      'Water line installation',
+      'Pipe repair and replacement',
+      'Fixture and faucet installation',
+      'Toilet repair and replacement',
+      'Commercial plumbing maintenance',
+    ],
+    processEyebrow: 'How It Works',
+    processTitle: 'A straightforward service process from first message to final test.',
+    processSteps: [
+      {
+        step: '01',
+        title: 'Tell Us The Issue',
+        text: 'Share what is happening, where it is located, and whether the problem is urgent.',
+      },
+      {
+        step: '02',
+        title: 'Get A Clear Plan',
+        text: 'We review the service need, explain the best repair or installation path, and schedule the visit.',
+      },
+      {
+        step: '03',
+        title: 'Professional Service',
+        text: 'The work is completed with care for your property, clean finishes, and practical recommendations.',
+      },
+      {
+        step: '04',
+        title: 'Test And Walkthrough',
+        text: 'We test flow, pressure, drainage, and fixtures before leaving so you know the job is complete.',
+      },
+    ],
+    contact: {
+      eyebrow: 'Request Service',
+      title: 'Tell HIDRO TONI what plumbing help you need.',
+      text:
+        'Choose a service, describe the issue, and include your contact details. The request will be routed through the website contact system.',
+      selectedService: 'Selected Service',
+      firstName: 'First Name',
+      lastName: 'Last Name',
+      email: 'Email',
+      phone: 'Phone',
+      phonePlaceholder: 'Your phone number',
+      serviceNeeded: 'Service Needed',
+      propertyType: 'Property Type',
+      timing: 'Timing',
+      message: 'Message',
+      messagePlaceholder:
+        'Describe the plumbing issue, installation need, property type, and preferred timing.',
+      sending: 'Sending Request...',
+      submit: 'Send Service Request',
+      success:
+        'Your request has been sent. HIDRO TONI will review it and follow up as soon as possible.',
+      error: 'The request could not be sent right now. Please check the details and try again.',
+    },
+    serviceOptions: [
+      { value: 'drain-cleaning', label: 'Plumbing & Drain Services' },
+      { value: 'water-pipe-installation', label: 'Water & Pipe Installation Services' },
+      { value: 'residential-plumbing', label: 'Residential Plumbing' },
+      { value: 'commercial-plumbing', label: 'Commercial Plumbing' },
+      { value: 'emergency-repairs', label: 'Emergency Leak or Backup' },
+      { value: 'water-heater-service', label: 'Water Heater / Fixture Service' },
+    ],
+    propertyTypes: [
+      { value: 'residential', label: 'Residential' },
+      { value: 'commercial', label: 'Commercial' },
+    ],
+    urgencyOptions: [
+      { value: 'emergency', label: 'Emergency request' },
+      { value: 'same-day', label: 'As soon as possible' },
+      { value: 'this-week', label: 'This week' },
+      { value: 'planning', label: 'Planning a project' },
+    ],
+    footer:
+      'Plumbing & Drain Services | Water & Pipe Installation | Residential & Commercial Plumbing',
   },
   sq: {
-    servicePlaceholder: 'Zgjidhni nj\u00eb sh\u00ebrbim',
-    messagePlaceholder:
-      'Na tregoni \u00e7far\u00eb ju nevojitet, \u00e7iftin e gjuh\u00ebve dhe afatin q\u00eb preferoni.',
-    submitIdle: 'D\u00ebrgo K\u00ebrkes\u00ebn \u2192',
-    submitSending: 'Duke d\u00ebrguar...',
-    success: 'K\u00ebrkesa juaj u pranua. Do t\u2019ju p\u00ebrgjigjemi sa m\u00eb shpejt.',
-    error:
-      'Nuk mund ta d\u00ebrgojm\u00eb k\u00ebrkes\u00ebn tani. Ju lutemi provoni p\u00ebrs\u00ebri ose na shkruani me email.',
+    documentLang: 'sq',
+    logoLabel: 'HIDRO TONI faqja kryesore',
+    navLabel: 'Navigimi kryesor',
+    nav: {
+      services: 'Sh\u00ebrbimet',
+      process: 'Procesi',
+      contact: 'Kontakti',
+    },
+    headerCta: 'K\u00ebrko Sh\u00ebrbim',
+    languageLabel: 'Gjuha',
+    hero: {
+      eyebrow: 'Hidraulik\u00eb, kanalizime, linja uji dhe tuba',
+      title: 'Sh\u00ebrbime hidraulike t\u00eb pastra p\u00ebr sht\u00ebpi dhe biznese.',
+      lede:
+        'HIDRO TONI ndihmon me probleme kanalizimi, instalim tubash, sh\u00ebrbime uji dhe mb\u00ebshtetje t\u00eb besueshme hidraulike p\u00ebr banesa ose biznese.',
+      primaryCta: 'Rezervo Vizit\u00eb Sh\u00ebrbimi',
+      secondaryCta: 'Shiko Sh\u00ebrbimet',
+      proofLabel: 'Pikat kryesore t\u00eb sh\u00ebrbimit',
+      cardLabel: 'Kartela e sh\u00ebrbimit HIDRO TONI',
+      cardTop: 'Thirrje Sh\u00ebrbimi',
+    },
+    proofPoints: [
+      { value: 'Shpejt', label: 'p\u00ebrgjigje p\u00ebr rrjedhje dhe bllokime urgjente' },
+      { value: 'Past\u00ebr', label: 'hap\u00ebsira e pun\u00ebs mbrohet nga fillimi n\u00eb fund' },
+      { value: 'Qart\u00eb', label: 'shpjegim i pun\u00ebs, \u00e7mimit dhe hapave para fillimit' },
+    ],
+    servicesEyebrow: '\u00c7far\u00eb Ofrojm\u00eb',
+    servicesTitle: 'Tre sh\u00ebrbime kryesore, nj\u00eb partner hidraulik i besuesh\u00ebm.',
+    services: [
+      {
+        id: 'drain-cleaning',
+        label: 'Sh\u00ebrbime Hidraulike & Kanalizimi',
+        eyebrow: 'Kanalizime t\u00eb bllokuara, rrjedhje, riparime',
+        description:
+          'Ndihm\u00eb e shpejt\u00eb p\u00ebr bllokime, kullime t\u00eb ngadalta, rrjedhje tubash, probleme tualeti, riparime rubinetash dhe probleme t\u00eb p\u00ebrditshme hidraulike.',
+        points: [
+          'Pastrimi i kanalizimeve',
+          'Zbulimi i rrjedhjeve',
+          'Riparime tualeti dhe rubinetash',
+          'Mir\u00ebmbajtje parandaluese',
+        ],
+      },
+      {
+        id: 'water-pipe-installation',
+        label: 'Sh\u00ebrbime Instalimi Uji & Tubash',
+        eyebrow: 'Instalime t\u00eb pastra, presion i q\u00ebndruesh\u00ebm',
+        description:
+          'Instalim i besuesh\u00ebm i linjave t\u00eb ujit, tubave, valvulave dhe pajisjeve p\u00ebr rinovime, p\u00ebrmir\u00ebsime dhe pun\u00eb t\u00eb re hidraulike.',
+        points: [
+          'Instalim linjash uji',
+          'Nd\u00ebrrim tubash',
+          'Montim pajisjesh',
+          'Kontroll presioni',
+        ],
+      },
+      {
+        id: 'residential-commercial',
+        label: 'Hidraulik\u00eb P\u00ebr Banesa & Biznese',
+        eyebrow: 'Sht\u00ebpi, dyqane, zyra',
+        description:
+          'Mb\u00ebshtetje profesionale hidraulike p\u00ebr pronar\u00eb sht\u00ebpish, qiradh\u00ebn\u00ebs, restorante, zyra, dyqane dhe menaxher\u00eb pronash.',
+        points: [
+          'Sh\u00ebrbime p\u00ebr sht\u00ebpi',
+          'Mir\u00ebmbajtje biznesi',
+          'Riparime p\u00ebr qiramarr\u00ebs',
+          'Pun\u00eb t\u00eb planifikuara',
+        ],
+      },
+    ],
+    emergency: {
+      eyebrow: 'Ndihm\u00eb Urgjente Hidraulike',
+      title: 'Rrjedhjet, bllokimet dhe problemet e presionit k\u00ebrkojn\u00eb reagim t\u00eb shpejt\u00eb.',
+      text:
+        'Nga kanalizimi i bllokuar deri te tubi i \u00e7ar\u00eb, HIDRO TONI fokusohet n\u00eb ndalimin e d\u00ebmit, rikthimin e rrjedh\u00ebs dhe shpjegimin e qart\u00eb t\u00eb riparimit para fillimit.',
+      cta: 'D\u00ebrgo K\u00ebrkes\u00eb Urgjente',
+    },
+    commonRequestsEyebrow: 'K\u00ebrkesa T\u00eb Shpeshta',
+    serviceAreas: [
+      'Pastrimi i kanalizimeve dhe heqja e bllokimeve',
+      'Instalimi i linjave t\u00eb ujit',
+      'Riparimi dhe nd\u00ebrrimi i tubave',
+      'Instalimi i rubinetave dhe pajisjeve',
+      'Riparimi dhe nd\u00ebrrimi i tualeteve',
+      'Mir\u00ebmbajtje hidraulike p\u00ebr biznese',
+    ],
+    processEyebrow: 'Si Funksionon',
+    processTitle: 'Proces i thjesht\u00eb nga mesazhi i par\u00eb deri te testimi final.',
+    processSteps: [
+      {
+        step: '01',
+        title: 'Tregoni Problemin',
+        text: 'Na tregoni \u00e7far\u00eb po ndodh, ku ndodhet problemi dhe n\u00ebse \u00ebsht\u00eb urgjent.',
+      },
+      {
+        step: '02',
+        title: 'Merrni Nj\u00eb Plan T\u00eb Qart\u00eb',
+        text: 'Ne shqyrtojm\u00eb nevoj\u00ebn, shpjegojm\u00eb zgjidhjen m\u00eb t\u00eb mir\u00eb dhe caktojm\u00eb vizit\u00ebn.',
+      },
+      {
+        step: '03',
+        title: 'Sh\u00ebrbim Profesional',
+        text: 'Puna kryhet me kujdes p\u00ebr pron\u00ebn tuaj, p\u00ebrfundim t\u00eb past\u00ebr dhe k\u00ebshilla praktike.',
+      },
+      {
+        step: '04',
+        title: 'Testim Dhe Shpjegim',
+        text: 'Testojm\u00eb rrjedh\u00ebn, presionin, kanalizimin dhe pajisjet para se t\u00eb largohemi.',
+      },
+    ],
+    contact: {
+      eyebrow: 'K\u00ebrko Sh\u00ebrbim',
+      title: 'Tregoni HIDRO TONI \u00e7far\u00eb ndihme hidraulike ju duhet.',
+      text:
+        'Zgjidhni sh\u00ebrbimin, p\u00ebrshkruani problemin dhe vendosni t\u00eb dh\u00ebnat e kontaktit. K\u00ebrkesa do t\u00eb d\u00ebrgohet p\u00ebrmes sistemit t\u00eb kontaktit t\u00eb faqes.',
+      selectedService: 'Sh\u00ebrbimi i zgjedhur',
+      firstName: 'Emri',
+      lastName: 'Mbiemri',
+      email: 'Email',
+      phone: 'Telefoni',
+      phonePlaceholder: 'Numri juaj i telefonit',
+      serviceNeeded: 'Sh\u00ebrbimi i nevojsh\u00ebm',
+      propertyType: 'Lloji i pron\u00ebs',
+      timing: 'Koha',
+      message: 'Mesazhi',
+      messagePlaceholder:
+        'P\u00ebrshkruani problemin hidraulik, nevoj\u00ebn p\u00ebr instalim, llojin e pron\u00ebs dhe koh\u00ebn e preferuar.',
+      sending: 'Duke D\u00ebrguar...',
+      submit: 'D\u00ebrgo K\u00ebrkes\u00ebn',
+      success:
+        'K\u00ebrkesa juaj u d\u00ebrgua. HIDRO TONI do ta shqyrtoj\u00eb dhe do t\u00eb kontaktoj\u00eb sa m\u00eb shpejt.',
+      error: 'K\u00ebrkesa nuk mund t\u00eb d\u00ebrgohet tani. Ju lutemi kontrolloni t\u00eb dh\u00ebnat dhe provoni p\u00ebrs\u00ebri.',
+    },
+    serviceOptions: [
+      { value: 'drain-cleaning', label: 'Sh\u00ebrbime Hidraulike & Kanalizimi' },
+      { value: 'water-pipe-installation', label: 'Sh\u00ebrbime Instalimi Uji & Tubash' },
+      { value: 'residential-plumbing', label: 'Hidraulik\u00eb P\u00ebr Banesa' },
+      { value: 'commercial-plumbing', label: 'Hidraulik\u00eb P\u00ebr Biznese' },
+      { value: 'emergency-repairs', label: 'Rrjedhje Ose Bllokim Urgjent' },
+      { value: 'water-heater-service', label: 'Boiler / Pajisje Hidraulike' },
+    ],
+    propertyTypes: [
+      { value: 'residential', label: 'Banes\u00eb' },
+      { value: 'commercial', label: 'Biznes' },
+    ],
+    urgencyOptions: [
+      { value: 'emergency', label: 'K\u00ebrkes\u00eb urgjente' },
+      { value: 'same-day', label: 'Sa m\u00eb shpejt' },
+      { value: 'this-week', label: 'K\u00ebt\u00eb jav\u00eb' },
+      { value: 'planning', label: 'Po planifikoj nj\u00eb projekt' },
+    ],
+    footer: 'Sh\u00ebrbime Hidraulike & Kanalizimi | Instalim Uji & Tubash | Banesa & Biznese',
   },
 }
 
-const activeContactCopy = computed(() => contactCopy[currentLang.value])
-const contactEndpoint = (import.meta.env.VITE_CONTACT_API_URL?.trim() || formspreeEndpoint)
-
-const contactErrorCopy = {
-  en: {
-    network:
-      'The contact service is not reachable right now. Please try again shortly or email us directly.',
-    endpoint:
-      'The contact form is not connected on this website yet. Please email us directly.',
-    unavailable:
-      'The contact service is not configured on the server yet. Please email us directly.',
-    validation: 'Please review the form fields and try again.',
-    generic: 'We could not send your request right now. Please try again or email us directly.',
-    emailFallback: 'Email Us Directly',
-  },
-  es: {
-    network:
-      'El servicio de contacto no esta disponible ahora mismo. Intente de nuevo en unos momentos o escribanos directamente por correo.',
-    endpoint:
-      'El formulario de contacto aun no esta conectado en este sitio web. Escribanos directamente por correo.',
-    unavailable:
-      'El servicio de contacto aun no esta configurado en el servidor. Escribanos directamente por correo.',
-    validation: 'Revise los campos del formulario e intentelo de nuevo.',
-    generic:
-      'No pudimos enviar su solicitud ahora mismo. Intente de nuevo o escribanos por correo.',
-    emailFallback: 'Escribanos Por Correo',
-  },
-  bs: {
-    network:
-      'Kontakt servis trenutno nije dostupan. Pokusajte ponovo uskoro ili nam pisite direktno e-postom.',
-    endpoint:
-      'Kontakt obrazac jos nije povezan na ovoj web stranici. Posaljite nam email direktno.',
-    unavailable:
-      'Kontakt servis jos nije konfigurisan na serveru. Posaljite nam email direktno.',
-    validation: 'Provjerite polja obrasca i pokusajte ponovo.',
-    generic:
-      'Trenutno nismo mogli poslati vas zahtjev. Pokusajte ponovo ili nam pisite e-postom.',
-    emailFallback: 'Posalji Email Direktno',
-  },
-  sq: {
-    network:
-      'Sherbimi i kontaktit nuk eshte i arritshem tani. Provo perseri pas pak ose na shkruaj direkt me email.',
-    endpoint:
-      'Formulari i kontaktit ende nuk eshte i lidhur ne kete webfaqe. Na shkruaj direkt me email.',
-    unavailable:
-      'Sherbimi i kontaktit ende nuk eshte i konfiguruar ne server. Na shkruaj direkt me email.',
-    validation: 'Kontrollo fushat e formularit dhe provo perseri.',
-    generic:
-      'Nuk mund ta dergojme kerkesen tani. Ju lutemi provoni perseri ose na shkruani me email.',
-    emailFallback: 'Na Shkruaj Me Email',
-  },
-}
-
-const activeContactErrorCopy = computed(() => contactErrorCopy[currentLang.value])
-
-const languageSectionCopy = {
-  en: {
-    headingHtml: 'Nine languages.<br />One voice.',
-    body:
-      'We provide expert translation and interpretation across Arabic, Bosnian, Croatian, English, French, German, Italian, Spanish, and Turkish for clients across Europe, the Balkans, and beyond.',
-  },
-  es: {
-    headingHtml: 'Nueve idiomas.<br />Una voz.',
-    body:
-      'Ofrecemos traduccion e interpretacion experta en arabe, bosnio, croata, ingles, frances, aleman, italiano, espanol y turco para clientes en Europa, los Balcanes y otros mercados.',
-  },
-  bs: {
-    headingHtml: 'Devet jezika.<br />Jedan glas.',
-    body:
-      'Pruzamo strucne prijevode i tumacenja na arapskom, bosanskom, hrvatskom, engleskom, francuskom, njemackom, italijanskom, spanskom i turskom jeziku za klijente sirom Evrope, Balkana i sire.',
-  },
-  sq: {
-    headingHtml: 'Nente gjuhe.<br />Nje ze.',
-    body:
-      'Ofrojme perkthim dhe interpretim profesional ne arabisht, boshnjakisht, kroatisht, anglisht, frengjisht, gjermanisht, italisht, spanjisht dhe turqisht per kliente ne Evrope, Ballkan dhe me gjere.',
-  },
-}
-
-const languageCards = [
-  {
-    code: 'AR',
-    name: 'Arabic',
-    native: 'al-Arabiyyah',
-    descriptions: {
-      en: 'Arabic support for formal documents, public-facing communication, and interpretation where clarity and cultural nuance matter.',
-      es: 'Soporte en arabe para documentos formales, comunicacion publica e interpretacion con claridad y sensibilidad cultural.',
-      bs: 'Arapski jezik za formalne dokumente, javnu komunikaciju i tumacenje gdje su vazni jasnoca i kulturne nijanse.',
-      sq: 'Mbeshtetje ne arabisht per dokumente formale, komunikim publik dhe interpretime ku rendesi kane qartesia dhe nuanca kulturore.',
-    },
-  },
-  {
-    code: 'BS',
-    name: 'Bosnian',
-    native: 'Bosanski',
-    descriptions: {
-      en: 'Expert Bosnian translators familiar with Balkan legal systems, healthcare, and diaspora communities.',
-      es: 'Traductores expertos de bosnio familiarizados con los sistemas legales balcanicos y comunidades de la diaspora.',
-      bs: 'Strucni bosanski prevodioci upoznati s balkanskim pravnim sistemima, zdravstvenom zastitom i dijasporom.',
-      sq: 'Perkthyes profesioniste te boshnjakishtes te njohur me sistemet juridike ballkanike, kujdesin shendetesor dhe diasporen.',
-    },
-  },
-  {
-    code: 'HR',
-    name: 'Croatian',
-    native: 'Hrvatski',
-    descriptions: {
-      en: 'Croatian support for regional communication, documentation, contracts, and cross-border collaboration in the Balkans.',
-      es: 'Soporte en croata para comunicacion regional, documentacion, contratos y colaboracion transfronteriza en los Balcanes.',
-      bs: 'Hrvatski jezik za regionalnu komunikaciju, dokumentaciju, ugovore i prekogranicnu saradnju na Balkanu.',
-      sq: 'Kroatisht per komunikim rajonal, dokumentacion, kontrata dhe bashkepunim nderkufitar ne Ballkan.',
-    },
-  },
-  {
-    code: 'EN',
-    name: 'English',
-    native: 'English',
-    descriptions: {
-      en: 'Native and professional-level English across legal, medical, technical, and business domains.',
-      es: 'Ingles nativo y de nivel profesional en ambitos legales, medicos, tecnicos y empresariales.',
-      bs: 'Maternji i profesionalni engleski u pravnim, medicinskim, tehnickim i poslovnim oblastima.',
-      sq: 'Anglishte amtare dhe e nivelit profesional ne fushat juridike, mjekesore, teknike dhe te biznesit.',
-    },
-  },
-  {
-    code: 'FR',
-    name: 'French',
-    native: 'Francais',
-    descriptions: {
-      en: 'French translation and interpretation for institutional communication, reports, presentations, and international coordination.',
-      es: 'Traduccion e interpretacion en frances para comunicacion institucional, informes, presentaciones y coordinacion internacional.',
-      bs: 'Francuski jezik za institucionalnu komunikaciju, izvjestaje, prezentacije i medjunarodnu koordinaciju.',
-      sq: 'Frengjisht per komunikim institucional, raporte, prezantime dhe koordinim nderkombetar.',
-    },
-  },
-  {
-    code: 'DE',
-    name: 'German',
-    native: 'Deutsch',
-    descriptions: {
-      en: 'German language support for business communication, formal documents, technical material, and client correspondence.',
-      es: 'Soporte en aleman para comunicacion empresarial, documentos formales, material tecnico y correspondencia con clientes.',
-      bs: 'Njemacki jezik za poslovnu komunikaciju, formalne dokumente, tehnicke materijale i prepisku s klijentima.',
-      sq: 'Gjermanisht per komunikim biznesi, dokumente formale, materiale teknike dhe korrespondence me kliente.',
-    },
-  },
-  {
-    code: 'IT',
-    name: 'Italian',
-    native: 'Italiano',
-    descriptions: {
-      en: 'Italian translation and interpretation for business, travel, cultural exchange, and professional documentation.',
-      es: 'Traduccion e interpretacion en italiano para negocios, viajes, intercambio cultural y documentacion profesional.',
-      bs: 'Italijanski jezik za poslovanje, putovanja, kulturnu razmjenu i profesionalnu dokumentaciju.',
-      sq: 'Italisht per biznes, udhetime, shkembim kulturor dhe dokumentacion profesional.',
-    },
-  },
-  {
-    code: 'ES',
-    name: 'Spanish',
-    native: 'Espanol',
-    descriptions: {
-      en: 'Regional Spanish dialects supported, Latin American and Castilian, with cultural accuracy.',
-      es: 'Dialectos regionales del espanol, latinoamericano y castellano, con precision cultural.',
-      bs: 'Podrzani regionalni spanski dijalekti, latinoamericki i kastiljski, s kulturnom tacnoscu.',
-      sq: 'Dialekte rajonale te spanjishtes, latinoamerikane dhe kastiliane, me saktesi kulturore.',
-    },
-  },
-  {
-    code: 'TR',
-    name: 'Turkish',
-    native: 'Turkce',
-    descriptions: {
-      en: 'Turkish language support for business communication, community services, trade, and formal documentation.',
-      es: 'Soporte en turco para comunicacion empresarial, servicios comunitarios, comercio y documentacion formal.',
-      bs: 'Turski jezik za poslovnu komunikaciju, usluge zajednici, trgovinu i formalnu dokumentaciju.',
-      sq: 'Turqisht per komunikim biznesi, sherbime komunitare, tregti dhe dokumentacion formal.',
-    },
-  },
-]
-
-const heroLanguages = languageCards.map((card) => card.name).sort((a, b) => a.localeCompare(b))
-
-const activeLanguageSectionCopy = computed(() => languageSectionCopy[currentLang.value])
-
-const contactBodyCopy = {
-  en:
-    "Whether you need a certified translation, a live interpreter, or a full localization project, we're here to help across Arabic, Bosnian, Croatian, English, French, German, Italian, Spanish, and Turkish.",
-  es:
-    'Ya sea que necesite una traduccion certificada, un interprete en vivo o un proyecto completo de localizacion, estamos aqui para ayudarle en arabe, bosnio, croata, ingles, frances, aleman, italiano, espanol y turco.',
-  bs:
-    'Bilo da trebate ovjereni prijevod, tumaca uzivo ili kompletan projekat lokalizacije, tu smo da pomognemo na arapskom, bosanskom, hrvatskom, engleskom, francuskom, njemackom, italijanskom, spanskom i turskom jeziku.',
-  sq:
-    "N\u00eb qoft\u00eb se ju nevojitet nj\u00eb perkthim i certifikuar, nj\u00eb interpretues i drejtp\u00ebrdrejt\u00eb apo nj\u00eb projekt i plot\u00eb lokalizimi, ne jemi k\u00ebtu p\u00ebr t'ju ndihmuar n\u00eb anglisht, spanjisht e boshnjakisht.",
-}
-
-const activeContactBody = computed(() => contactBodyCopy[currentLang.value])
-const heroTaglines = [
-  'Sh\u00ebrbime t\u00eb P\u00ebrkthimit dhe Interpretimit',
-  'Servicios de Traducci\u00f3n e Interpretaci\u00f3n',
-  'Translation & Interpretation Services',
-  'Usluge Prevo\u0111enja i Tuma\u010denja',
-]
-
-const form = reactive({
+const formDefaults = {
   firstName: '',
   lastName: '',
   email: '',
-  service: '',
+  phone: '',
+  service: 'drain-cleaning',
+  propertyType: 'residential',
+  urgency: 'same-day',
   message: '',
   website: '',
-})
+}
 
-const selectedServiceLabel = computed(
-  () => currentServiceOptions.value.find((option) => option.value === form.service)?.label ?? form.service,
+const contactForm = reactive({ ...formDefaults })
+const isSubmitting = ref(false)
+const submitStatus = ref('idle')
+
+const copy = computed(() => content[currentLang.value])
+
+const selectedService = computed(
+  () =>
+    copy.value.serviceOptions.find((service) => service.value === contactForm.service) ??
+    copy.value.serviceOptions[0],
 )
 
-const submissionState = ref('idle')
-const submissionErrorKey = ref('generic')
-const heroTaglineIndex = ref(0)
-const heroTaglineCharCount = ref(0)
-const heroTaglineDeleting = ref(false)
+const statusMessage = computed(() => {
+  if (submitStatus.value === 'success') {
+    return copy.value.contact.success
+  }
 
-const activeSubmissionError = computed(
-  () => activeContactErrorCopy.value[submissionErrorKey.value] ?? activeContactErrorCopy.value.generic,
-)
+  if (submitStatus.value === 'error') {
+    return copy.value.contact.error
+  }
 
-const typedHeroTagline = computed(() => {
-  const characters = Array.from(heroTaglines[heroTaglineIndex.value])
-  return characters.slice(0, heroTaglineCharCount.value).join('')
+  return ''
 })
 
-const directEmailHref = computed(() => {
-  const subject = encodeURIComponent('Babil contact request')
-  const body = encodeURIComponent(
-    [
-      `First name: ${form.firstName || '-'}`,
-      `Last name: ${form.lastName || '-'}`,
-      `Email: ${form.email || '-'}`,
-      `Service: ${selectedServiceLabel.value || '-'}`,
-      '',
-      'Message:',
-      form.message || '-',
-    ].join('\n'),
-  )
-
-  return `mailto:info@babiltranslation.com?subject=${subject}&body=${body}`
-})
-
-let observer
-let heroTypingTimer
-let loaderHideTimer
-let previousBodyOverflow = ''
-
-function releaseBodyScroll() {
-  if (typeof document !== 'undefined') {
-    document.body.style.overflow = previousBodyOverflow
-  }
+function setLanguage(lang) {
+  currentLang.value = lang
+  submitStatus.value = 'idle'
+  document.documentElement.lang = content[lang].documentLang
 }
 
-function scheduleHeroTyping(delay) {
-  clearTimeout(heroTypingTimer)
-  heroTypingTimer = setTimeout(stepHeroTyping, delay)
-}
-
-function stepHeroTyping() {
-  const fullTextCharacters = Array.from(heroTaglines[heroTaglineIndex.value])
-
-  if (!heroTaglineDeleting.value) {
-    heroTaglineCharCount.value += 1
-
-    if (heroTaglineCharCount.value >= fullTextCharacters.length) {
-      heroTaglineCharCount.value = fullTextCharacters.length
-      heroTaglineDeleting.value = true
-      scheduleHeroTyping(1400)
-      return
-    }
-
-    scheduleHeroTyping(68)
-    return
-  }
-
-  heroTaglineCharCount.value = Math.max(heroTaglineCharCount.value - 1, 0)
-
-  if (heroTaglineCharCount.value === 0) {
-    heroTaglineDeleting.value = false
-    heroTaglineIndex.value = (heroTaglineIndex.value + 1) % heroTaglines.length
-    scheduleHeroTyping(260)
-    return
-  }
-
-  scheduleHeroTyping(34)
-}
-
-function clearSubmissionState() {
-  if (submissionState.value !== 'submitting') {
-    submissionState.value = 'idle'
-    submissionErrorKey.value = 'generic'
-  }
-}
-
-function resetForm() {
-  form.firstName = ''
-  form.lastName = ''
-  form.email = ''
-  form.service = ''
-  form.message = ''
-  form.website = ''
-}
-
-async function submitForm() {
-  if (!contactForm.value?.reportValidity()) {
-    return
-  }
-
-  submissionState.value = 'submitting'
-  submissionErrorKey.value = 'generic'
+async function handleSubmit() {
+  submitStatus.value = 'idle'
+  isSubmitting.value = true
 
   try {
-    if (form.website.trim()) {
-      submissionState.value = 'success'
-      resetForm()
-      return
-    }
-
-    const formData = new FormData()
-    formData.append('name', `${form.firstName.trim()} ${form.lastName.trim()}`.trim())
-    formData.append('firstName', form.firstName.trim())
-    formData.append('lastName', form.lastName.trim())
-    formData.append('email', form.email.trim())
-    formData.append('service', selectedServiceLabel.value || form.service)
-    formData.append('language', currentLang.value.toUpperCase())
-    formData.append('message', form.message.trim())
-    formData.append('_subject', `New Babil contact request from ${form.firstName.trim()} ${form.lastName.trim()}`.trim())
-
-    const response = await fetch(contactEndpoint, {
+    const response = await fetch('/api/contact', {
       method: 'POST',
       headers: {
-        Accept: 'application/json',
+        'Content-Type': 'application/json',
       },
-      body: formData,
+      body: JSON.stringify({
+        ...contactForm,
+        language: currentLang.value,
+      }),
     })
 
-    const result = await response.json().catch(() => ({}))
-
     if (!response.ok) {
-      const requestError = new Error(
-        result.errors?.map((entry) => entry.message).join(', ') || result.error || 'Request failed',
-      )
-      requestError.status = response.status
-      throw requestError
+      throw new Error('Contact request failed')
     }
 
-    submissionState.value = 'success'
-    resetForm()
+    Object.assign(contactForm, formDefaults)
+    submitStatus.value = 'success'
   } catch (error) {
-    console.error('Unable to submit contact form:', error)
-
-    const isNetworkError =
-      error instanceof TypeError ||
-      /fetch|network|load failed/i.test(String(error?.message ?? '')) ||
-      (typeof window !== 'undefined' && window.location.protocol === 'file:')
-
-    if (error?.status === 422) {
-      submissionErrorKey.value = 'validation'
-    } else if (error?.status === 404 || error?.status === 405) {
-      submissionErrorKey.value = 'endpoint'
-    } else if (error?.status === 503) {
-      submissionErrorKey.value = 'unavailable'
-    } else if (isNetworkError) {
-      submissionErrorKey.value = 'network'
-    } else {
-      submissionErrorKey.value = 'generic'
-    }
-
-    submissionState.value = 'error'
+    submitStatus.value = 'error'
+  } finally {
+    isSubmitting.value = false
   }
 }
-
-onMounted(() => {
-  if (typeof document !== 'undefined') {
-    previousBodyOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-  }
-
-  loaderHideTimer = window.setTimeout(() => {
-    showLoader.value = false
-    releaseBodyScroll()
-  }, 1500)
-
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.style.animation = 'fadeUp 0.7s ease both'
-          entry.target.style.opacity = '1'
-          observer?.unobserve(entry.target)
-        }
-      })
-    },
-    { threshold: 0.15 },
-  )
-
-  const elements =
-    appShell.value?.querySelectorAll('.service-card, .lang-card-animate, .process-step, .stat') ?? []
-
-  elements.forEach((element) => {
-    element.style.opacity = '0'
-    observer?.observe(element)
-  })
-
-  scheduleHeroTyping(1080)
-})
-
-onBeforeUnmount(() => {
-  observer?.disconnect()
-  clearTimeout(heroTypingTimer)
-  clearTimeout(loaderHideTimer)
-  releaseBodyScroll()
-})
 </script>
 
 <template>
-  <Transition name="loader-fade">
-    <div v-if="showLoader" class="loader-screen" role="status" aria-label="Loading">
-      <div class="loader-spinner" aria-hidden="true"></div>
-    </div>
-  </Transition>
+  <div class="site-shell" :data-lang="currentLang">
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
 
-  <div ref="appShell" class="app-shell" :class="{ 'is-loading': showLoader }" :data-lang="currentLang">
-    <nav>
-      <a href="#" class="nav-logo">
-        <svg viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="32" y="5" width="16" height="12" fill="#1a1814" />
-          <rect x="25" y="17" width="30" height="12" fill="#1a1814" />
-          <rect x="8" y="29" width="22" height="11" fill="#1a1814" />
-          <rect x="8" y="29" width="5" height="5" fill="#d8d4c4" />
-          <rect x="38" y="29" width="22" height="11" fill="#1a1814" />
-          <rect x="55" y="29" width="5" height="5" fill="#d8d4c4" />
-          <rect x="5" y="40" width="26" height="13" fill="#1a1814" />
-          <rect x="5" y="45" width="5" height="5" fill="#d8d4c4" />
-          <rect x="49" y="40" width="26" height="13" fill="#1a1814" />
-          <rect x="70" y="45" width="5" height="5" fill="#d8d4c4" />
-          <rect x="2" y="53" width="32" height="12" fill="#1a1814" />
-          <rect x="2" y="57" width="6" height="5" fill="#d8d4c4" />
-          <rect x="46" y="53" width="32" height="12" fill="#1a1814" />
-          <rect x="72" y="57" width="6" height="5" fill="#d8d4c4" />
-        </svg>
-        <span class="nav-logo-text">BABIL</span>
+    <header class="site-header">
+      <a class="brand" href="#home" :aria-label="copy.logoLabel">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 144 72" role="img">
+            <defs>
+              <linearGradient id="waveHot" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stop-color="#f03737" />
+                <stop offset="48%" stop-color="#8b1024" />
+                <stop offset="100%" stop-color="#148fe4" />
+              </linearGradient>
+              <linearGradient id="waveCool" x1="0" x2="1" y1="0" y2="0">
+                <stop offset="0%" stop-color="#ef3535" />
+                <stop offset="42%" stop-color="#101a35" />
+                <stop offset="100%" stop-color="#49a9ea" />
+              </linearGradient>
+            </defs>
+            <path
+              d="M10 22c21-9 34-9 55 1 22 10 36 10 59-1"
+              fill="none"
+              stroke="url(#waveHot)"
+              stroke-linecap="round"
+              stroke-width="10"
+            />
+            <path
+              d="M10 42c21-9 34-9 55 1 22 10 36 10 59-1"
+              fill="none"
+              stroke="url(#waveCool)"
+              stroke-linecap="round"
+              stroke-width="10"
+            />
+          </svg>
+        </span>
+        <span class="brand-type">
+          <span>HIDRO</span>
+          <span>TONI</span>
+        </span>
       </a>
 
-      <ul class="nav-links">
-        <li>
-          <a href="about.html">
-            <span class="content-en">About</span>
-            <span class="content-es">Acerca</span>
-            <span class="content-bs">O nama</span>
-            <span class="content-sq">Rreth Nesh</span>
-          </a>
-        </li>
-        <li>
-          <a href="#services">
-            <span class="content-en">Services</span>
-            <span class="content-es">Servicios</span>
-            <span class="content-bs">Usluge</span>
-            <span class="content-sq">Shërbimet</span>
-          </a>
-        </li>
-        <li>
-          <a href="#languages">
-            <span class="content-en">Languages</span>
-            <span class="content-es">Idiomas</span>
-            <span class="content-bs">Jezici</span>
-            <span class="content-sq">Gjuhët</span>
-          </a>
-        </li>
-        <li>
-          <a href="#contact">
-            <span class="content-en">Contact</span>
-            <span class="content-es">Contacto</span>
-            <span class="content-bs">Kontakt</span>
-            <span class="content-sq">Kontakt</span>
-          </a>
-        </li>
-      </ul>
+      <nav class="nav-links" :aria-label="copy.navLabel">
+        <a href="#services">{{ copy.nav.services }}</a>
+        <a href="#process">{{ copy.nav.process }}</a>
+        <a href="#contact">{{ copy.nav.contact }}</a>
+      </nav>
 
-      <div class="nav-lang">
-        <select v-model="currentLang" class="lang-select" aria-label="Choose language">
-          <option value="sq">SQ | Shqip</option>
-          <option value="en">EN | English</option>
-          <option value="es">ES | Espanol</option>
-          <option value="bs">BS | Bosanski</option>
-        </select>
-      </div>
-    </nav>
-
-    <section class="hero">
-      <div class="cuneiform-bg" aria-hidden="true">{{ heroScript }}</div>
-      <div class="hero-aura hero-aura-one" aria-hidden="true"></div>
-      <div class="hero-aura hero-aura-two" aria-hidden="true"></div>
-      <div class="hero-orbit hero-orbit-one" aria-hidden="true"></div>
-      <div class="hero-orbit hero-orbit-two" aria-hidden="true"></div>
-
-      <div class="hero-center">
-        <svg class="tower-mark" viewBox="0 0 160 175" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="58" y="0" width="44" height="32" fill="#1a1814" />
-          <rect x="44" y="32" width="72" height="28" fill="#1a1814" />
-          <rect x="63" y="38" width="12" height="12" fill="#d8d4c4" />
-          <rect x="20" y="60" width="52" height="28" fill="#1a1814" />
-          <rect x="22" y="65" width="10" height="10" fill="#d8d4c4" />
-          <rect x="88" y="60" width="52" height="28" fill="#1a1814" />
-          <rect x="128" y="65" width="10" height="10" fill="#d8d4c4" />
-          <rect x="5" y="88" width="60" height="30" fill="#1a1814" />
-          <rect x="7" y="94" width="12" height="12" fill="#d8d4c4" />
-          <rect x="95" y="88" width="60" height="30" fill="#1a1814" />
-          <rect x="143" y="94" width="12" height="12" fill="#d8d4c4" />
-          <rect x="0" y="118" width="70" height="32" fill="#1a1814" />
-          <rect x="2" y="124" width="12" height="12" fill="#d8d4c4" />
-          <rect x="32" y="124" width="12" height="12" fill="#d8d4c4" />
-          <rect x="90" y="118" width="70" height="32" fill="#1a1814" />
-          <rect x="146" y="124" width="12" height="12" fill="#d8d4c4" />
-          <rect x="114" y="124" width="12" height="12" fill="#d8d4c4" />
-          <rect x="0" y="150" width="160" height="25" fill="#1a1814" opacity="0.15" />
-        </svg>
-
-        <div class="divider-line"></div>
-        <h1 class="hero-name">BABIL</h1>
-        <p class="hero-tagline" :aria-label="heroTaglines[heroTaglineIndex]">
-          <span class="hero-tagline-text">{{ typedHeroTagline }}</span>
-          <span class="hero-tagline-cursor" aria-hidden="true"></span>
-          <span class="content-en">Translation &amp; Interpretation Services</span>
-          <span class="content-es">Servicios de Traducción e Interpretación</span>
-          <span class="content-bs">Usluge Prevođenja i Tumačenja</span>
-          <span class="content-sq">Shërbime të Përkthimit dhe Interpretimit</span>
-        </p>
-        <div class="hero-langs">
-          <span v-for="language in heroLanguages" :key="language" class="hero-lang-pill">{{ language }}</span>
-          <span>Español</span>
+      <div class="header-actions">
+        <div class="language-switch" :aria-label="copy.languageLabel">
+          <button
+            type="button"
+            class="language-button"
+            :class="{ active: currentLang === 'en' }"
+            :aria-pressed="currentLang === 'en'"
+            @click="setLanguage('en')"
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            class="language-button"
+            :class="{ active: currentLang === 'sq' }"
+            :aria-pressed="currentLang === 'sq'"
+            @click="setLanguage('sq')"
+          >
+            AL
+          </button>
         </div>
+        <a class="header-cta" href="#contact">{{ copy.headerCta }}</a>
       </div>
+    </header>
 
-      <div class="hero-scroll" aria-hidden="true">
-        <span class="content-en">Scroll</span>
-        <span class="content-es">Desplazar</span>
-        <span class="content-bs">Skrolaj</span>
-        <span class="content-sq">Lëviz</span>
-        <div class="scroll-line"></div>
-      </div>
-    </section>
+    <main>
+      <section id="home" class="hero-section">
+        <div class="hero-copy">
+          <p class="eyebrow">{{ copy.hero.eyebrow }}</p>
+          <h1>{{ copy.hero.title }}</h1>
+          <p class="hero-lede">
+            {{ copy.hero.lede }}
+          </p>
 
-    <div class="motion-band" aria-hidden="true">
-      <div class="motion-band-inner">
-        <div class="motion-band-group">
-          <span class="motion-band-item">
-            <span class="content-en">Certified Translation</span>
-            <span class="content-es">Traduccion Certificada</span>
-            <span class="content-bs">Ovjereni Prijevod</span>
-            <span class="content-sq">Perkthim i Certifikuar</span>
-          </span>
-          <span class="motion-band-item">
-            <span class="content-en">Live Interpretation</span>
-            <span class="content-es">Interpretacion en Vivo</span>
-            <span class="content-bs">Tumacenje Uzivo</span>
-            <span class="content-sq">Interpretim i Drejtperdrejte</span>
-          </span>
-          <span class="motion-band-item">
-            <span class="content-en">Proofreading &amp; Editing</span>
-            <span class="content-es">Correccion y Edicion</span>
-            <span class="content-bs">Lektura i Redaktura</span>
-            <span class="content-sq">Lekture dhe Redaktim</span>
-          </span>
-          <span class="motion-band-item">
-            <span class="content-en">Legal Services</span>
-            <span class="content-es">Servicios Legales</span>
-            <span class="content-bs">Pravne Usluge</span>
-            <span class="content-sq">Sherbime Ligjore</span>
-          </span>
-          <span class="motion-band-item">
-            <span class="content-en">Business Localization</span>
-            <span class="content-es">Localizacion Empresarial</span>
-            <span class="content-bs">Poslovna Lokalizacija</span>
-            <span class="content-sq">Lokalizim Biznesi</span>
-          </span>
-          <span class="motion-band-item">
-            <span class="content-en">Confidential Handling</span>
-            <span class="content-es">Manejo Confidencial</span>
-            <span class="content-bs">Povjerljivo Rukovanje</span>
-            <span class="content-sq">Trajtim Konfidencial</span>
-          </span>
-        </div>
-
-        <div class="motion-band-group">
-          <span class="motion-band-item">
-            <span class="content-en">Certified Translation</span>
-            <span class="content-es">Traduccion Certificada</span>
-            <span class="content-bs">Ovjereni Prijevod</span>
-            <span class="content-sq">Perkthim i Certifikuar</span>
-          </span>
-          <span class="motion-band-item">
-            <span class="content-en">Live Interpretation</span>
-            <span class="content-es">Interpretacion en Vivo</span>
-            <span class="content-bs">Tumacenje Uzivo</span>
-            <span class="content-sq">Interpretim i Drejtperdrejte</span>
-          </span>
-          <span class="motion-band-item">
-            <span class="content-en">Proofreading &amp; Editing</span>
-            <span class="content-es">Correccion y Edicion</span>
-            <span class="content-bs">Lektura i Redaktura</span>
-            <span class="content-sq">Lekture dhe Redaktim</span>
-          </span>
-          <span class="motion-band-item">
-            <span class="content-en">Legal Services</span>
-            <span class="content-es">Servicios Legales</span>
-            <span class="content-bs">Pravne Usluge</span>
-            <span class="content-sq">Sherbime Ligjore</span>
-          </span>
-          <span class="motion-band-item">
-            <span class="content-en">Business Localization</span>
-            <span class="content-es">Localizacion Empresarial</span>
-            <span class="content-bs">Poslovna Lokalizacija</span>
-            <span class="content-sq">Lokalizim Biznesi</span>
-          </span>
-          <span class="motion-band-item">
-            <span class="content-en">Confidential Handling</span>
-            <span class="content-es">Manejo Confidencial</span>
-            <span class="content-bs">Povjerljivo Rukovanje</span>
-            <span class="content-sq">Trajtim Konfidencial</span>
-          </span>
-        </div>
-      </div>
-    </div>
-
-    <section id="about" class="about">
-      <div class="section-inner">
-        <div class="about-grid">
-          <div>
-            <div class="section-label">
-              <span class="content-en">About Babil</span>
-              <span class="content-es">Acerca de Babil</span>
-              <span class="content-bs">O Babilu</span>
-              <span class="content-sq">Rreth Babil</span>
-            </div>
-
-            <h2 class="about-heading content-en">Bridging worlds through the power of language</h2>
-            <h2 class="about-heading content-es">Uniendo mundos a través del poder del idioma</h2>
-            <h2 class="about-heading content-bs">Premošćujemo svjetove snagom jezika</h2>
-            <h2 class="about-heading content-sq">Lidhim botët përmes fuqisë së gjuhës</h2>
-
-            <p class="about-body content-en">
-              Named after the ancient city of <em>Babylon</em> — the cradle of written language —
-              Babil carries forward a legacy of communication across cultures. We believe that every
-              word carries weight, and every translation is an act of trust.
-            </p>
-            <p class="about-body content-es">
-              Con el nombre de la antigua ciudad de <em>Babilonia</em> — cuna del lenguaje escrito —
-              Babil perpetúa el legado de la comunicación entre culturas. Creemos que cada palabra
-              tiene peso, y cada traducción es un acto de confianza.
-            </p>
-            <p class="about-body content-bs">
-              Nazvani po drevnom gradu <em>Babilonu</em> — kolijevci pisanog jezika — Babil
-              nastavlja nasljeđe komunikacije između kultura. Vjerujemo da svaka riječ nosi težinu,
-              a svaki prijevod je čin povjerenja.
-            </p>
-            <p class="about-body content-sq">
-              I quajtur sipas qytetit antik të <em>Babilonisë</em> — djepit të gjuhës së shkruar —
-              Babil vazhdon trashëgiminë e komunikimit mes kulturave. Ne besojmë se çdo fjalë ka
-              peshë dhe çdo përkthim është një akt besimi.
-            </p>
-
-            <div class="about-copy-shared">
-              <p class="about-body">
-                BABIL Translation Services was established in 2016 by Qerim Ondozi, an experienced
-                translator and polyglot who holds a Professional Master's Degree in Translation and
-                Interpretation from the University of Prishtina. Together with his colleagues, now an
-                integral part of the BABIL team, Mr. Ondozi has been providing translation and
-                interpretation services since 2002.
-              </p>
-              <a class="about-read-more" href="/about.html">
-                <span class="content-en">Read More</span>
-                <span class="content-es">Leer Mas</span>
-                <span class="content-bs">Procitaj Vise</span>
-                <span class="content-sq">Lexo Me Shume</span>
-              </a>
-            </div>
-
-            <div class="about-stats">
-              <div class="stat">
-                <div class="stat-number">25+</div>
-                <div class="stat-label content-en">Language Pairs</div>
-                <div class="stat-label content-es">Pares de Idiomas</div>
-                <div class="stat-label content-bs">Jezičnih Parova</div>
-                <div class="stat-label content-sq">Çifte Gjuhësh</div>
-              </div>
-              <div class="stat">
-                <div class="stat-number">500+</div>
-                <div class="stat-label content-en">Projects Completed</div>
-                <div class="stat-label content-es">Proyectos Completados</div>
-                <div class="stat-label content-bs">Završenih Projekata</div>
-                <div class="stat-label content-sq">Projekte të Përfunduara</div>
-              </div>
-              <div class="stat">
-                <div class="stat-number">98%</div>
-                <div class="stat-label content-en">Client Satisfaction</div>
-                <div class="stat-label content-es">Satisfacción del Cliente</div>
-                <div class="stat-label content-bs">Zadovoljstvo Klijenata</div>
-                <div class="stat-label content-sq">Kënaqësia e Klientëve</div>
-              </div>
-              <div class="stat">
-                <div class="stat-number">48h</div>
-                <div class="stat-label content-en">Average Turnaround</div>
-                <div class="stat-label content-es">Tiempo de Entrega</div>
-                <div class="stat-label content-bs">Prosječan Rok Dostave</div>
-                <div class="stat-label content-sq">Koha Mesatare e Dorëzimit</div>
-              </div>
-            </div>
+          <div class="hero-actions">
+            <a class="primary-button" href="#contact">{{ copy.hero.primaryCta }}</a>
+            <a class="secondary-button" href="#services">{{ copy.hero.secondaryCta }}</a>
           </div>
 
-          <div class="about-tower-container">
-            <svg class="about-tower" viewBox="0 0 160 175" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="58" y="0" width="44" height="32" fill="#1a1814" />
-              <rect x="44" y="32" width="72" height="28" fill="#1a1814" />
-              <rect x="63" y="38" width="12" height="12" fill="#d8d4c4" />
-              <rect x="20" y="60" width="52" height="28" fill="#1a1814" />
-              <rect x="22" y="65" width="10" height="10" fill="#d8d4c4" />
-              <rect x="88" y="60" width="52" height="28" fill="#1a1814" />
-              <rect x="128" y="65" width="10" height="10" fill="#d8d4c4" />
-              <rect x="5" y="88" width="60" height="30" fill="#1a1814" />
-              <rect x="7" y="94" width="12" height="12" fill="#d8d4c4" />
-              <rect x="95" y="88" width="60" height="30" fill="#1a1814" />
-              <rect x="143" y="94" width="12" height="12" fill="#d8d4c4" />
-              <rect x="0" y="118" width="70" height="32" fill="#1a1814" />
-              <rect x="2" y="124" width="12" height="12" fill="#d8d4c4" />
-              <rect x="32" y="124" width="12" height="12" fill="#d8d4c4" />
-              <rect x="90" y="118" width="70" height="32" fill="#1a1814" />
-              <rect x="146" y="124" width="12" height="12" fill="#d8d4c4" />
-              <rect x="114" y="124" width="12" height="12" fill="#d8d4c4" />
-            </svg>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
-    <section id="services" class="services">
-      <div class="section-inner">
-        <div class="section-label">
-          <span class="content-en">What We Offer</span>
-          <span class="content-es">Lo que Ofrecemos</span>
-          <span class="content-bs">Šta Nudimo</span>
-          <span class="content-sq">Çfarë Ofrojmë</span>
-        </div>
-
-        <h2 class="services-heading content-en">Precision at every level of language</h2>
-        <h2 class="services-heading content-es">Precisión en cada nivel del idioma</h2>
-        <h2 class="services-heading content-bs">Preciznost na svakom nivou jezika</h2>
-        <h2 class="services-heading content-sq">Saktësi në çdo nivel të gjuhës</h2>
-
-        <div class="services-grid">
-          <div class="service-card">
-            <div class="service-icon">𒄿</div>
-            <div class="service-title content-en">Document Translation</div>
-            <div class="service-title content-es">Traducción de Documentos</div>
-            <div class="service-title content-bs">Prevođenje Dokumenata</div>
-            <div class="service-title content-sq">Përkthim Dokumentesh</div>
-            <p class="service-desc content-en">
-              Legal, medical, technical, and personal documents translated with certified accuracy
-              and cultural sensitivity.
-            </p>
-            <p class="service-desc content-es">
-              Documentos legales, médicos, técnicos y personales traducidos con precisión
-              certificada y sensibilidad cultural.
-            </p>
-            <p class="service-desc content-bs">
-              Pravni, medicinski, tehnički i lični dokumenti prevedeni s ovjerenom preciznošću i
-              kulturnom osjetljivošću.
-            </p>
-            <p class="service-desc content-sq">
-              Dokumente ligjore, mjekësore, teknike dhe personale të përkthyera me saktësi të
-              certifikuar dhe ndjeshmëri kulturore.
-            </p>
-          </div>
-
-          <div class="service-card">
-            <div class="service-icon">𒀭</div>
-            <div class="service-title content-en">Live Interpretation</div>
-            <div class="service-title content-es">Interpretación en Vivo</div>
-            <div class="service-title content-bs">Simultano Tumačenje</div>
-            <div class="service-title content-sq">Interpretim i Drejtpërdrejtë</div>
-            <p class="service-desc content-en">
-              Consecutive and simultaneous interpretation for meetings, hearings, medical
-              appointments, and conferences.
-            </p>
-            <p class="service-desc content-es">
-              Interpretación consecutiva y simultánea para reuniones, audiencias, citas médicas y
-              conferencias.
-            </p>
-            <p class="service-desc content-bs">
-              Konsekutivno i simultano tumačenje za sastanke, ročišta, medicinske preglede i
-              konferencije.
-            </p>
-            <p class="service-desc content-sq">
-              Interpretim konsekutiv dhe simultan për takime, seanca, vizita mjekësore dhe
-              konferenca.
-            </p>
-          </div>
-
-          <div class="service-card">
-            <div class="service-icon">𒌷</div>
-            <div class="service-title content-en">Certified Translation</div>
-            <div class="service-title content-es">Traducción Certificada</div>
-            <div class="service-title content-bs">Ovjereni Prijevod</div>
-            <div class="service-title content-sq">Përkthim i Certifikuar</div>
-            <p class="service-desc content-en">
-              Official certified translations accepted by courts, immigration authorities, and
-              government agencies.
-            </p>
-            <p class="service-desc content-es">
-              Traducciones certificadas oficiales aceptadas por tribunales, autoridades de
-              inmigración y organismos gubernamentales.
-            </p>
-            <p class="service-desc content-bs">
-              Zvanični ovjereni prijevodi prihvaćeni od sudova, imigracijskih vlasti i vladinih
-              agencija.
-            </p>
-            <p class="service-desc content-sq">
-              Përkthime zyrtare të certifikuara të pranuara nga gjykatat, autoritetet e emigracionit
-              dhe agjencitë qeveritare.
-            </p>
-          </div>
-
-          <div class="service-card">
-            <div class="service-icon">𒈾</div>
-            <div class="service-title content-en">Proofreading &amp; Editing</div>
-            <div class="service-title content-es">Corrección y Edición</div>
-            <div class="service-title content-bs">Lektura i Redaktura</div>
-            <div class="service-title content-sq">Lekturë dhe Redaktim Dokumentesh</div>
-            <p class="service-desc content-en">
-              Professional review, proofreading, and final document polishing for translations,
-              reports, contracts, and official submissions.
-            </p>
-            <p class="service-desc content-es">
-              Revisión profesional, corrección y pulido final de documentos para traducciones,
-              informes, contratos y presentaciones oficiales.
-            </p>
-            <p class="service-desc content-bs">
-              Profesionalna lektura, korektura i završno uređivanje dokumenata za prijevode,
-              izvještaje, ugovore i službenu dokumentaciju.
-            </p>
-            <p class="service-desc content-sq">
-              Lekturë profesionale, korrigjim dhe redaktim përfundimtar i dokumenteve për
-              përkthime, raporte, kontrata dhe paraqitje zyrtare.
-            </p>
-          </div>
-
-          <div class="service-card">
-            <div class="service-icon">𒁹</div>
-            <div class="service-title content-en">Business Localization</div>
-            <div class="service-title content-es">Localización Empresarial</div>
-            <div class="service-title content-bs">Poslovna Lokalizacija</div>
-            <div class="service-title content-sq">Lokalizim Biznesi</div>
-            <p class="service-desc content-en">
-              Website, marketing, and corporate communications adapted for target language
-              audiences and cultural contexts.
-            </p>
-            <p class="service-desc content-es">
-              Sitio web, marketing y comunicaciones corporativas adaptados para audiencias en el
-              idioma de destino.
-            </p>
-            <p class="service-desc content-bs">
-              Web stranice, marketing i korporativne komunikacije prilagođene ciljanoj publici i
-              kulturnom kontekstu.
-            </p>
-            <p class="service-desc content-sq">
-              Faqe interneti, marketing dhe komunikime korporative të përshtatura për audiencat dhe
-              kontekstet kulturore të gjuhës së synuar.
-            </p>
-          </div>
-
-          <div class="service-card">
-            <div class="service-icon">𒍪</div>
-            <div class="service-title content-en">Legal Services</div>
-            <div class="service-title content-es">Servicios Legales</div>
-            <div class="service-title content-bs">Pravne Usluge</div>
-            <div class="service-title content-sq">Shërbime Ligjore</div>
-            <p class="service-desc content-en">
-              Court-ready translations and interpretation for depositions, trials, and all legal
-              proceedings.
-            </p>
-            <p class="service-desc content-es">
-              Traducciones listas para el tribunal e interpretación para deposiciones, juicios y
-              todos los procedimientos legales.
-            </p>
-            <p class="service-desc content-bs">
-              Prijevodi i tumačenja za sudske postupke, saslušanja i sve pravne procedure.
-            </p>
-            <p class="service-desc content-sq">
-              Përkthime dhe interpretime të gatshme për gjykatë për dëshmi, gjykime dhe të gjitha
-              procedurat ligjore.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="languages-legacy" class="languages languages-legacy">
-      <div class="section-inner">
-        <div class="languages-layout">
-          <div>
-            <div class="section-label">
-              <span class="content-en">Our Languages</span>
-              <span class="content-es">Nuestros Idiomas</span>
-              <span class="content-bs">Naši Jezici</span>
-              <span class="content-sq">Gjuhët Tona</span>
-            </div>
-
-            <h2 class="lang-intro-heading-dynamic" v-html="activeLanguageSectionCopy.headingHtml"></h2>
-            <p class="lang-intro-body-dynamic">
-              {{ activeLanguageSectionCopy.body }}
-            </p>
-            <h2 class="lang-intro-heading content-en">Three languages.<br />One voice.</h2>
-            <h2 class="lang-intro-heading content-es">Cuatro idiomas.<br />Una voz.</h2>
-            <h2 class="lang-intro-heading content-bs">Četiri jezika.<br />Jedan glas.</h2>
-            <h2 class="lang-intro-heading content-sq">Katër gjuhë.<br />Një zë.</h2>
-
-            <p class="lang-intro-body content-en">
-              We provide expert translation and interpretation across English, Spanish, Bosnian,
-              and Albanian — covering communities across the Americas, Europe, and the Balkans.
-            </p>
-            <p class="lang-intro-body content-es">
-              Ofrecemos traducción e interpretación experta en inglés, español, bosnio y albanés,
-              cubriendo comunidades en las Américas, Europa y los Balcanes.
-            </p>
-            <p class="lang-intro-body content-bs">
-              Pružamo stručne prijevode i tumačenja na engleskom, španskom, bosanskom i albanskom
-              jeziku — pokrivajući zajednice u Americi, Evropi i na Balkanu.
-            </p>
-            <p class="lang-intro-body content-sq">
-              Ofrojmë përkthim dhe interpretim profesional në anglisht, spanjisht, boshnjakisht
-              dhe shqip — duke mbuluar komunitete në Amerikë, Evropë dhe Ballkan.
-            </p>
-          </div>
-
-          <div class="lang-cards lang-cards-legacy">
-            <div class="lang-card">
-              <span class="lang-flag">🇺🇸</span>
-              <div class="lang-name">English</div>
-              <span class="lang-native">English</span>
-              <p class="lang-desc content-en">
-                Native and professional-level English across legal, medical, technical, and
-                business domains.
-              </p>
-              <p class="lang-desc content-es">
-                Inglés nativo y de nivel profesional en ámbitos legales, médicos, técnicos y
-                empresariales.
-              </p>
-              <p class="lang-desc content-bs">
-                Maternji i profesionalni engleski u pravnim, medicinskim, tehničkim i poslovnim
-                oblastima.
-              </p>
-              <p class="lang-desc content-sq">
-                Anglishte amtare dhe e nivelit profesional në fushat juridike, mjekësore, teknike
-                dhe të biznesit.
-              </p>
-            </div>
-
-            <div class="lang-card">
-              <span class="lang-flag">🇪🇸</span>
-              <div class="lang-name">Spanish</div>
-              <span class="lang-native">Español</span>
-              <p class="lang-desc content-en">
-                Regional Spanish dialects supported — Latin American and Castilian — with cultural
-                accuracy.
-              </p>
-              <p class="lang-desc content-es">
-                Dialectos regionales del español — latinoamericano y castellano — con precisión
-                cultural.
-              </p>
-              <p class="lang-desc content-bs">
-                Podržani regionalni španski dijalekti — latinoamerički i kastiljski — s kulturnom
-                tačnošću.
-              </p>
-              <p class="lang-desc content-sq">
-                Dialekte rajonale të spanjishtes — latinoamerikane dhe kastiliane — me saktësi
-                kulturore.
-              </p>
-            </div>
-
-            <div class="lang-card">
-              <span class="lang-flag">🇧🇦</span>
-              <div class="lang-name">Bosnian</div>
-              <span class="lang-native">Bosanski</span>
-              <p class="lang-desc content-en">
-                Expert Bosnian translators familiar with Balkan legal systems, healthcare, and
-                diaspora communities.
-              </p>
-              <p class="lang-desc content-es">
-                Traductores expertos de bosnio familiarizados con los sistemas legales balcánicos y
-                comunidades de la diáspora.
-              </p>
-              <p class="lang-desc content-bs">
-                Stručni bosanski prevodioci upoznati s balkanskim pravnim sistemima, zdravstvenom
-                zaštitom i dijasporom.
-              </p>
-              <p class="lang-desc content-sq">
-                Përkthyes profesionistë të boshnjakishtes të njohur me sistemet juridike
-                ballkanike, kujdesin shëndetësor dhe diasporën.
-              </p>
-            </div>
-
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="languages" class="languages">
-      <div class="section-inner">
-        <div class="languages-layout">
-          <div class="languages-copy">
-            <div class="section-label">
-              <span class="content-en">Our Languages</span>
-              <span class="content-es">Nuestros Idiomas</span>
-              <span class="content-bs">Nasi Jezici</span>
-              <span class="content-sq">Gjuhet Tona</span>
-            </div>
-
-            <h2 class="lang-intro-heading-dynamic" v-html="activeLanguageSectionCopy.headingHtml"></h2>
-            <p class="lang-intro-body-dynamic">
-              {{ activeLanguageSectionCopy.body }}
-            </p>
-          </div>
-
-          <div class="lang-cards">
-            <article
-              v-for="(card, index) in languageCards"
-              :key="card.code"
-              class="lang-card lang-card-animate"
-              :style="{ animationDelay: `${index * 0.06}s` }"
-            >
-              <span class="lang-flag">{{ card.code }}</span>
-              <div class="lang-name">{{ card.name }}</div>
-              <span class="lang-native">{{ card.native }}</span>
-              <p class="lang-desc">
-                {{ card.descriptions[currentLang] }}
-              </p>
+          <div class="proof-grid" :aria-label="copy.hero.proofLabel">
+            <article v-for="item in copy.proofPoints" :key="item.value">
+              <strong>{{ item.value }}</strong>
+              <span>{{ item.label }}</span>
             </article>
           </div>
         </div>
-      </div>
-    </section>
 
-    <section class="process">
-      <div class="section-inner">
-        <h2 class="process-heading content-en">How It Works</h2>
-        <h2 class="process-heading content-es">Cómo Funciona</h2>
-        <h2 class="process-heading content-bs">Kako Funkcioniše</h2>
-        <h2 class="process-heading content-sq">Si Funksionon</h2>
-
-        <div class="process-steps">
-          <div class="process-step">
-            <div class="step-num">I</div>
-            <div class="step-title content-en">Submit</div>
-            <div class="step-title content-es">Enviar</div>
-            <div class="step-title content-bs">Pošalji</div>
-            <div class="step-title content-sq">Dërgo</div>
-            <p class="step-desc content-en">
-              Share your document or describe your interpretation needs through our contact form.
-            </p>
-            <p class="step-desc content-es">
-              Comparta su documento o describa sus necesidades de interpretación a través del
-              formulario.
-            </p>
-            <p class="step-desc content-bs">
-              Podijelite dokument ili opišite potrebe za tumačenjem putem našeg kontakt obrasca.
-            </p>
-            <p class="step-desc content-sq">
-              Ndani dokumentin tuaj ose përshkruani nevojat tuaja për interpretim përmes formularit
-              tonë të kontaktit.
-            </p>
+        <aside class="hero-card" :aria-label="copy.hero.cardLabel">
+          <div class="hero-card-top">
+            <span>{{ copy.hero.cardTop }}</span>
+            <span>HIDRO TONI</span>
           </div>
-
-          <div class="process-step">
-            <div class="step-num">II</div>
-            <div class="step-title content-en">Review</div>
-            <div class="step-title content-es">Revisión</div>
-            <div class="step-title content-bs">Pregled</div>
-            <div class="step-title content-sq">Shqyrtim</div>
-            <p class="step-desc content-en">
-              We assess scope, complexity, and provide a transparent quote within 24 hours.
-            </p>
-            <p class="step-desc content-es">
-              Evaluamos el alcance, la complejidad y proporcionamos un presupuesto transparente en
-              24 horas.
-            </p>
-            <p class="step-desc content-bs">
-              Procjenjujemo opseg, složenost i dajemo transparentnu ponudu u roku od 24 sata.
-            </p>
-            <p class="step-desc content-sq">
-              Vlerësojmë fushëveprimin, kompleksitetin dhe japim një ofertë të qartë brenda 24
-              orëve.
-            </p>
+          <div class="pipe-illustration" aria-hidden="true">
+            <span class="pipe pipe-a"></span>
+            <span class="pipe pipe-b"></span>
+            <span class="pipe pipe-c"></span>
+            <span class="valve"></span>
+            <span class="drop drop-a"></span>
+            <span class="drop drop-b"></span>
           </div>
-
-          <div class="process-step">
-            <div class="step-num">III</div>
-            <div class="step-title content-en">Translate</div>
-            <div class="step-title content-es">Traducir</div>
-            <div class="step-title content-bs">Prevodi</div>
-            <div class="step-title content-sq">Përkthe</div>
-            <p class="step-desc content-en">
-              Expert linguists translate or interpret with precision, accuracy, and cultural
-              nuance.
-            </p>
-            <p class="step-desc content-es">
-              Lingüistas expertos traducen o interpretan con precisión y matices culturales.
-            </p>
-            <p class="step-desc content-bs">
-              Stručni lingvisti prevode ili tumače s preciznošću, tačnošću i kulturnim nijansama.
-            </p>
-            <p class="step-desc content-sq">
-              Gjuhëtarët tanë ekspertë përkthejnë ose interpretojnë me saktësi, përpikëri dhe
-              ndjeshmëri kulturore.
-            </p>
+          <div class="hero-service-list">
+            <p v-for="service in copy.services" :key="service.id">{{ service.label }}</p>
           </div>
+        </aside>
+      </section>
 
-          <div class="process-step">
-            <div class="step-num">IV</div>
-            <div class="step-title content-en">Deliver</div>
-            <div class="step-title content-es">Entregar</div>
-            <div class="step-title content-bs">Isporuka</div>
-            <div class="step-title content-sq">Dorëzim</div>
-            <p class="step-desc content-en">
-              Final delivery in your preferred format — certified, stamped, and ready for official
-              use.
-            </p>
-            <p class="step-desc content-es">
-              Entrega final en el formato preferido: certificado, sellado y listo para uso oficial.
-            </p>
-            <p class="step-desc content-bs">
-              Konačna isporuka u željenom formatu — ovjerena, pečatirana i spremna za zvaničnu
-              upotrebu.
-            </p>
-            <p class="step-desc content-sq">
-              Dorëzim final në formatin tuaj të preferuar — i certifikuar, i vulosur dhe gati për
-              përdorim zyrtar.
-            </p>
+      <section id="services" class="section services-section">
+        <div class="section-heading">
+          <p class="eyebrow">{{ copy.servicesEyebrow }}</p>
+          <h2>{{ copy.servicesTitle }}</h2>
+        </div>
+
+        <div class="service-grid">
+          <article v-for="service in copy.services" :key="service.id" class="service-card">
+            <span class="service-number">{{ service.eyebrow }}</span>
+            <h3>{{ service.label }}</h3>
+            <p>{{ service.description }}</p>
+            <ul>
+              <li v-for="point in service.points" :key="point">{{ point }}</li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="split-section">
+        <div class="split-panel emergency-panel">
+          <p class="eyebrow">{{ copy.emergency.eyebrow }}</p>
+          <h2>{{ copy.emergency.title }}</h2>
+          <p>{{ copy.emergency.text }}</p>
+          <a class="secondary-button light" href="#contact">{{ copy.emergency.cta }}</a>
+        </div>
+
+        <div class="split-panel checklist-panel">
+          <p class="eyebrow">{{ copy.commonRequestsEyebrow }}</p>
+          <ul class="service-checklist">
+            <li v-for="item in copy.serviceAreas" :key="item">{{ item }}</li>
+          </ul>
+        </div>
+      </section>
+
+      <section id="process" class="section process-section">
+        <div class="section-heading narrow">
+          <p class="eyebrow">{{ copy.processEyebrow }}</p>
+          <h2>{{ copy.processTitle }}</h2>
+        </div>
+
+        <div class="process-grid">
+          <article v-for="item in copy.processSteps" :key="item.step" class="process-card">
+            <span>{{ item.step }}</span>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.text }}</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="contact" class="contact-section">
+        <div class="contact-copy">
+          <p class="eyebrow">{{ copy.contact.eyebrow }}</p>
+          <h2>{{ copy.contact.title }}</h2>
+          <p>{{ copy.contact.text }}</p>
+
+          <div class="contact-mini-card">
+            <span>{{ copy.contact.selectedService }}</span>
+            <strong>{{ selectedService.label }}</strong>
           </div>
         </div>
-      </div>
-    </section>
 
-    <div class="quote-band">
-      <div class="cuneiform-bg" aria-hidden="true">{{ quoteScript }}</div>
+        <form class="contact-form" @submit.prevent="handleSubmit">
+          <input v-model="contactForm.website" class="honeypot" type="text" tabindex="-1" autocomplete="off" />
 
-      <blockquote class="quote-text content-en">
-        "The limits of my language are the limits of my world."
-      </blockquote>
-      <blockquote class="quote-text content-es">
-        "Los límites de mi idioma son los límites de mi mundo."
-      </blockquote>
-      <blockquote class="quote-text content-bs">
-        "Granice mog jezika su granice mog svijeta."
-      </blockquote>
-      <blockquote class="quote-text content-sq">
-        "Kufijtë e gjuhës sime janë kufijtë e botës sime."
-      </blockquote>
-      <p class="quote-source">— Ludwig Wittgenstein</p>
-    </div>
-
-    <section id="contact" class="contact">
-      <div class="section-inner">
-        <div class="contact-grid">
-          <div>
-            <div class="section-label">
-              <span class="content-en">Get In Touch</span>
-              <span class="content-es">Contáctenos</span>
-              <span class="content-bs">Kontaktirajte nas</span>
-              <span class="content-sq">Na Kontaktoni</span>
-            </div>
-
-            <h2 class="contact-heading content-en">Let's start the conversation</h2>
-            <h2 class="contact-heading content-es">Comencemos la conversación</h2>
-            <h2 class="contact-heading content-bs">Započnimo razgovor</h2>
-            <h2 class="contact-heading content-sq">Le ta fillojmë bisedën</h2>
-
-            <p class="contact-body-dynamic">
-              {{ activeContactBody }}
-            </p>
-            <p class="contact-body content-en">
-              Whether you need a certified translation, a live interpreter, or a full localization
-              project — we're here to help, in any of our four languages.
-            </p>
-            <p class="contact-body content-es">
-              Ya sea que necesite una traducción certificada, un intérprete en vivo o un proyecto
-              de localización completo — estamos aquí para ayudar, en cualquiera de nuestros cuatro
-              idiomas.
-            </p>
-            <p class="contact-body content-bs">
-              Bilo da trebate ovjereni prijevod, živog tumača ili cjeloviti projekat lokalizacije —
-              ovdje smo da pomognemo, na bilo kom od naša četiri jezika.
-            </p>
-            <p class="contact-body content-sq">
-              Qoftë se ju nevojitet një përkthim i certifikuar, një interpretues i drejtpërdrejtë
-              apo një projekt i plotë lokalizimi — ne jemi këtu për t'ju ndihmuar, në cilëndo nga
-              katër gjuhët tona.
-            </p>
-
-            <div class="contact-details">
-              <div class="contact-item">
-                <span class="contact-item-label content-en">Email</span>
-                <span class="contact-item-label content-es">Email</span>
-                <span class="contact-item-label content-bs">Email</span>
-                <span class="contact-item-label content-sq">Email</span>
-                <a class="contact-item-value contact-item-link" href="mailto:info@babiltranslation.com">
-                  info@babiltranslation.com
-                </a>
-              </div>
-              <div class="contact-item">
-                <span class="contact-item-label content-en">Phone</span>
-                <span class="contact-item-label content-es">Teléfono</span>
-                <span class="contact-item-label content-bs">Telefon</span>
-                <span class="contact-item-label content-sq">Telefoni</span>
-                <a class="contact-item-value contact-item-link" href="tel:+38345741555">
-                  +38345741555
-                </a>
-              </div>
-              <div class="contact-item">
-                <span class="contact-item-label content-en">Hours</span>
-                <span class="contact-item-label content-es">Horario</span>
-                <span class="contact-item-label content-bs">Radno Vrijeme</span>
-                <span class="contact-item-label content-sq">Orari</span>
-                <span class="contact-item-value content-en">Mon–Fri, 8am–6pm</span>
-                <span class="contact-item-value content-es">Lun–Vie, 8am–6pm</span>
-                <span class="contact-item-value content-bs">Pon–Pet, 8–18h</span>
-                <span class="contact-item-value content-sq">Hën–Pre, 8:00–18:00</span>
-              </div>
-            </div>
+          <div class="form-row">
+            <label>
+              {{ copy.contact.firstName }}
+              <input v-model.trim="contactForm.firstName" type="text" name="firstName" required />
+            </label>
+            <label>
+              {{ copy.contact.lastName }}
+              <input v-model.trim="contactForm.lastName" type="text" name="lastName" required />
+            </label>
           </div>
 
-          <div>
-            <form
-              ref="contactForm"
-              class="contact-form"
-              @submit.prevent="submitForm"
-              @input="clearSubmissionState"
-              @change="clearSubmissionState"
-            >
-              <fieldset class="contact-fieldset" :disabled="submissionState === 'submitting'">
-                <div class="form-group honeypot-field" aria-hidden="true">
-                  <label class="form-label" for="website">Website</label>
-                  <input
-                    id="website"
-                    v-model="form.website"
-                    type="text"
-                    class="form-input"
-                    name="website"
-                    tabindex="-1"
-                    autocomplete="off"
-                  />
-                </div>
-                <div class="form-row">
-              <div class="form-group">
-                <label class="form-label content-en">First Name</label>
-                <label class="form-label content-es">Nombre</label>
-                <label class="form-label content-bs">Ime</label>
-                <label class="form-label content-sq">Emri</label>
-                <input
-                  v-model.trim="form.firstName"
-                  type="text"
-                  class="form-input"
-                  name="firstName"
-                  autocomplete="given-name"
-                  maxlength="80"
-                  required
-                />
-              </div>
-              <div class="form-group">
-                <label class="form-label content-en">Last Name</label>
-                <label class="form-label content-es">Apellido</label>
-                <label class="form-label content-bs">Prezime</label>
-                <label class="form-label content-sq">Mbiemri</label>
-                <input
-                  v-model.trim="form.lastName"
-                  type="text"
-                  class="form-input"
-                  name="lastName"
-                  autocomplete="family-name"
-                  maxlength="80"
-                  required
-                />
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Email</label>
+          <div class="form-row">
+            <label>
+              {{ copy.contact.email }}
+              <input v-model.trim="contactForm.email" type="email" name="email" required />
+            </label>
+            <label>
+              {{ copy.contact.phone }}
               <input
-                v-model.trim="form.email"
-                type="email"
-                class="form-input"
-                name="email"
-                autocomplete="email"
-                maxlength="254"
-                required
+                v-model.trim="contactForm.phone"
+                type="tel"
+                name="phone"
+                :placeholder="copy.contact.phonePlaceholder"
               />
-            </div>
+            </label>
+          </div>
 
-            <div class="form-group">
-              <label class="form-label content-en">Service Needed</label>
-              <label class="form-label content-es">Servicio Requerido</label>
-              <label class="form-label content-bs">Potrebna Usluga</label>
-              <label class="form-label content-sq">Shërbimi i Nevojshëm</label>
-              <select v-model="form.service" class="form-select" name="service" required>
-                <option value="" disabled>{{ activeContactCopy.servicePlaceholder }}</option>
-                <option v-for="option in currentServiceOptions" :key="option.value" :value="option.value">
-                  {{ option.label }}
+          <div class="form-row">
+            <label>
+              {{ copy.contact.serviceNeeded }}
+              <select v-model="contactForm.service" name="service" required>
+                <option v-for="service in copy.serviceOptions" :key="service.value" :value="service.value">
+                  {{ service.label }}
                 </option>
               </select>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label content-en">Your Message</label>
-              <label class="form-label content-es">Su Mensaje</label>
-              <label class="form-label content-bs">Vaša Poruka</label>
-              <label class="form-label content-sq">Mesazhi Juaj</label>
-              <textarea
-                v-model.trim="form.message"
-                class="form-textarea"
-                name="message"
-                :placeholder="activeContactCopy.messagePlaceholder"
-                minlength="20"
-                maxlength="2500"
-                required
-              ></textarea>
-            </div>
-
-            <button type="submit" class="submit-btn" :disabled="submissionState === 'submitting'">
-              <span class="content-en">Send Request →</span>
-              <span class="content-es">Enviar Solicitud →</span>
-              <span class="content-bs">Pošalji Zahtjev →</span>
-              <span class="content-sq">Dërgo Kërkesën →</span>
-            </button>
-            <p v-if="submissionState === 'success'" class="form-status form-status-success" aria-live="polite">
-              {{ activeContactCopy.success }}
-            </p>
-            <div v-else-if="submissionState === 'error'" class="form-status form-status-error" aria-live="polite">
-              <p>{{ activeSubmissionError }}</p>
-              <a class="form-status-link" :href="directEmailHref">
-                {{ activeContactErrorCopy.emailFallback }}
-              </a>
-            </div>
-              </fieldset>
-            </form>
+            </label>
+            <label>
+              {{ copy.contact.propertyType }}
+              <select v-model="contactForm.propertyType" name="propertyType" required>
+                <option v-for="type in copy.propertyTypes" :key="type.value" :value="type.value">
+                  {{ type.label }}
+                </option>
+              </select>
+            </label>
           </div>
-        </div>
-      </div>
-    </section>
 
-    <footer>
-      <div class="footer-logo">
-        <svg width="24" height="26" viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="28" y="0" width="24" height="18" fill="#d8d4c4" opacity="0.7" />
-          <rect x="18" y="18" width="44" height="16" fill="#d8d4c4" opacity="0.7" />
-          <rect x="5" y="34" width="32" height="16" fill="#d8d4c4" opacity="0.7" />
-          <rect x="43" y="34" width="32" height="16" fill="#d8d4c4" opacity="0.7" />
-          <rect x="0" y="50" width="38" height="18" fill="#d8d4c4" opacity="0.7" />
-          <rect x="42" y="50" width="38" height="18" fill="#d8d4c4" opacity="0.7" />
-        </svg>
-        <span class="footer-logo-text">BABIL</span>
-      </div>
+          <label>
+            {{ copy.contact.timing }}
+            <select v-model="contactForm.urgency" name="urgency" required>
+              <option v-for="urgency in copy.urgencyOptions" :key="urgency.value" :value="urgency.value">
+                {{ urgency.label }}
+              </option>
+            </select>
+          </label>
 
-      <span class="footer-copy">
-        <span class="content-en">© 2026 Babil Translation &amp; Interpretation Services</span>
-        <span class="content-es">© 2026 Servicios de Traducción e Interpretación Babil</span>
-        <span class="content-bs">© 2026 Babil Usluge Prevođenja i Tumačenja</span>
-        <span class="content-sq">© 2026 Babil Shërbime të Përkthimit dhe Interpretimit</span>
-      </span>
+          <label>
+            {{ copy.contact.message }}
+            <textarea
+              v-model.trim="contactForm.message"
+              name="message"
+              rows="5"
+              required
+              :placeholder="copy.contact.messagePlaceholder"
+            ></textarea>
+          </label>
 
-      <ul class="footer-links">
-        <li>
-          <a href="#about">
-            <span class="content-en">About</span>
-            <span class="content-es">Acerca</span>
-            <span class="content-bs">O nama</span>
-            <span class="content-sq">Rreth Nesh</span>
-          </a>
-        </li>
-        <li>
-          <a href="#services">
-            <span class="content-en">Services</span>
-            <span class="content-es">Servicios</span>
-            <span class="content-bs">Usluge</span>
-            <span class="content-sq">Shërbimet</span>
-          </a>
-        </li>
-        <li>
-          <a href="#contact">
-            <span class="content-en">Contact</span>
-            <span class="content-es">Contacto</span>
-            <span class="content-bs">Kontakt</span>
-            <span class="content-sq">Kontakt</span>
-          </a>
-        </li>
-      </ul>
+          <button class="primary-button form-button" type="submit" :disabled="isSubmitting">
+            {{ isSubmitting ? copy.contact.sending : copy.contact.submit }}
+          </button>
+
+          <p v-if="statusMessage" class="form-status" :class="submitStatus">{{ statusMessage }}</p>
+        </form>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <a class="brand footer-brand" href="#home" :aria-label="copy.logoLabel">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 144 72">
+            <path
+              d="M10 22c21-9 34-9 55 1 22 10 36 10 59-1"
+              fill="none"
+              stroke="#ef3535"
+              stroke-linecap="round"
+              stroke-width="10"
+            />
+            <path
+              d="M10 42c21-9 34-9 55 1 22 10 36 10 59-1"
+              fill="none"
+              stroke="#3ca5e9"
+              stroke-linecap="round"
+              stroke-width="10"
+            />
+          </svg>
+        </span>
+        <span class="brand-type">
+          <span>HIDRO</span>
+          <span>TONI</span>
+        </span>
+      </a>
+      <p>{{ copy.footer }}</p>
+      <a href="#contact">{{ copy.headerCta }}</a>
     </footer>
   </div>
 </template>
