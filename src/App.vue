@@ -1,8 +1,13 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import SpinningLogoIsland from '@/components/SpinningLogoIsland.vue'
+import AboutGlobeIsland from '@/components/AboutGlobeIsland.vue'
 
 const appShell = ref(null)
-const currentLang = ref('en')
+const isLoading = ref(true)
+const supportedLanguages = ['en', 'es', 'bs']
+const pathLanguage = window.location.pathname.split('/').filter(Boolean)[0]
+const currentLang = ref(supportedLanguages.includes(pathLanguage) ? pathLanguage : 'en')
 
 const heroScript = `𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹
 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾
@@ -12,12 +17,17 @@ const quoteScript = `𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾
 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾`
 
 let observer
-
-function setLang(lang) {
-  currentLang.value = lang
-}
+let loadingTimer
 
 onMounted(() => {
+  document.documentElement.lang = currentLang.value
+  document.body.classList.add('is-loading')
+
+  loadingTimer = window.setTimeout(() => {
+    isLoading.value = false
+    document.body.classList.remove('is-loading')
+  }, 1600)
+
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -42,29 +52,22 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   observer?.disconnect()
+  window.clearTimeout(loadingTimer)
+  document.body.classList.remove('is-loading')
 })
 </script>
 
 <template>
+  <Transition name="loading-screen">
+    <div v-if="isLoading" class="loading-screen" role="status" aria-live="polite">
+      <SpinningLogoIsland />
+    </div>
+  </Transition>
+
   <div ref="appShell" class="app-shell" :data-lang="currentLang">
     <nav>
-      <a href="#" class="nav-logo">
-        <svg viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="32" y="5" width="16" height="12" fill="#1a1814" />
-          <rect x="25" y="17" width="30" height="12" fill="#1a1814" />
-          <rect x="8" y="29" width="22" height="11" fill="#1a1814" />
-          <rect x="8" y="29" width="5" height="5" fill="#d8d4c4" />
-          <rect x="38" y="29" width="22" height="11" fill="#1a1814" />
-          <rect x="55" y="29" width="5" height="5" fill="#d8d4c4" />
-          <rect x="5" y="40" width="26" height="13" fill="#1a1814" />
-          <rect x="5" y="45" width="5" height="5" fill="#d8d4c4" />
-          <rect x="49" y="40" width="26" height="13" fill="#1a1814" />
-          <rect x="70" y="45" width="5" height="5" fill="#d8d4c4" />
-          <rect x="2" y="53" width="32" height="12" fill="#1a1814" />
-          <rect x="2" y="57" width="6" height="5" fill="#d8d4c4" />
-          <rect x="46" y="53" width="32" height="12" fill="#1a1814" />
-          <rect x="72" y="57" width="6" height="5" fill="#d8d4c4" />
-        </svg>
+      <a :href="`/${currentLang}/`" class="nav-logo" aria-label="Babil home">
+        <img class="brand-logo brand-logo--nav" src="/babil-logo.png" alt="" width="44" height="44" />
         <span class="nav-logo-text">BABIL</span>
       </a>
 
@@ -100,30 +103,36 @@ onBeforeUnmount(() => {
       </ul>
 
       <div class="nav-lang">
-        <button
-          type="button"
+        <a
           class="lang-btn"
           :class="{ active: currentLang === 'en' }"
-          @click="setLang('en')"
+          href="/en/"
+          hreflang="en"
+          lang="en"
+          aria-label="View this website in English"
         >
           EN
-        </button>
-        <button
-          type="button"
+        </a>
+        <a
           class="lang-btn"
           :class="{ active: currentLang === 'es' }"
-          @click="setLang('es')"
+          href="/es/"
+          hreflang="es"
+          lang="es"
+          aria-label="Ver este sitio web en español"
         >
           ES
-        </button>
-        <button
-          type="button"
+        </a>
+        <a
           class="lang-btn"
           :class="{ active: currentLang === 'bs' }"
-          @click="setLang('bs')"
+          href="/bs/"
+          hreflang="bs"
+          lang="bs"
+          aria-label="Pogledajte ovu web stranicu na bosanskom"
         >
           BS
-        </button>
+        </a>
       </div>
     </nav>
 
@@ -131,29 +140,13 @@ onBeforeUnmount(() => {
       <div class="cuneiform-bg" aria-hidden="true">{{ heroScript }}</div>
 
       <div class="hero-center">
-        <svg class="tower-mark" viewBox="0 0 160 175" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="58" y="0" width="44" height="32" fill="#1a1814" />
-          <rect x="44" y="32" width="72" height="28" fill="#1a1814" />
-          <rect x="63" y="38" width="12" height="12" fill="#d8d4c4" />
-          <rect x="20" y="60" width="52" height="28" fill="#1a1814" />
-          <rect x="22" y="65" width="10" height="10" fill="#d8d4c4" />
-          <rect x="88" y="60" width="52" height="28" fill="#1a1814" />
-          <rect x="128" y="65" width="10" height="10" fill="#d8d4c4" />
-          <rect x="5" y="88" width="60" height="30" fill="#1a1814" />
-          <rect x="7" y="94" width="12" height="12" fill="#d8d4c4" />
-          <rect x="95" y="88" width="60" height="30" fill="#1a1814" />
-          <rect x="143" y="94" width="12" height="12" fill="#d8d4c4" />
-          <rect x="0" y="118" width="70" height="32" fill="#1a1814" />
-          <rect x="2" y="124" width="12" height="12" fill="#d8d4c4" />
-          <rect x="32" y="124" width="12" height="12" fill="#d8d4c4" />
-          <rect x="90" y="118" width="70" height="32" fill="#1a1814" />
-          <rect x="146" y="124" width="12" height="12" fill="#d8d4c4" />
-          <rect x="114" y="124" width="12" height="12" fill="#d8d4c4" />
-          <rect x="0" y="150" width="160" height="25" fill="#1a1814" opacity="0.15" />
-        </svg>
+        <img class="brand-logo tower-mark" src="/babil-logo.png" alt="Babil Translation tower logo" width="220" height="220" />
 
         <div class="divider-line"></div>
-        <h1 class="hero-name">BABIL</h1>
+        <p class="hero-name">BABIL</p>
+        <h1 class="hero-seo-title content-en">English, Spanish &amp; Bosnian Translation Agency</h1>
+        <h1 class="hero-seo-title content-es">Agencia de traducción en inglés, español y bosnio</h1>
+        <h1 class="hero-seo-title content-bs">Agencija za engleski, španski i bosanski prevod</h1>
         <p class="hero-tagline">
           <span class="content-en">Translation &amp; Interpretation Services</span>
           <span class="content-es">Servicios de Traducción e Interpretación</span>
@@ -232,26 +225,12 @@ onBeforeUnmount(() => {
             </div>
           </div>
 
-          <div class="about-tower-container">
-            <svg class="about-tower" viewBox="0 0 160 175" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="58" y="0" width="44" height="32" fill="#1a1814" />
-              <rect x="44" y="32" width="72" height="28" fill="#1a1814" />
-              <rect x="63" y="38" width="12" height="12" fill="#d8d4c4" />
-              <rect x="20" y="60" width="52" height="28" fill="#1a1814" />
-              <rect x="22" y="65" width="10" height="10" fill="#d8d4c4" />
-              <rect x="88" y="60" width="52" height="28" fill="#1a1814" />
-              <rect x="128" y="65" width="10" height="10" fill="#d8d4c4" />
-              <rect x="5" y="88" width="60" height="30" fill="#1a1814" />
-              <rect x="7" y="94" width="12" height="12" fill="#d8d4c4" />
-              <rect x="95" y="88" width="60" height="30" fill="#1a1814" />
-              <rect x="143" y="94" width="12" height="12" fill="#d8d4c4" />
-              <rect x="0" y="118" width="70" height="32" fill="#1a1814" />
-              <rect x="2" y="124" width="12" height="12" fill="#d8d4c4" />
-              <rect x="32" y="124" width="12" height="12" fill="#d8d4c4" />
-              <rect x="90" y="118" width="70" height="32" fill="#1a1814" />
-              <rect x="146" y="124" width="12" height="12" fill="#d8d4c4" />
-              <rect x="114" y="124" width="12" height="12" fill="#d8d4c4" />
-            </svg>
+          <div class="about-globe-container">
+            <div class="about-globe-orbit" aria-hidden="true"></div>
+            <AboutGlobeIsland />
+            <p class="about-globe-caption content-en">Languages without borders</p>
+            <p class="about-globe-caption content-es">Idiomas sin fronteras</p>
+            <p class="about-globe-caption content-bs">Jezici bez granica</p>
           </div>
         </div>
       </div>
@@ -598,11 +577,15 @@ onBeforeUnmount(() => {
             <div class="contact-details">
               <div class="contact-item">
                 <span class="contact-item-label">Email</span>
-                <span class="contact-item-value">info@babil-translations.com</span>
+                <a class="contact-item-value" href="mailto:info@babiltranslation.com">info@babiltranslation.com</a>
               </div>
               <div class="contact-item">
-                <span class="contact-item-label">Phone</span>
-                <span class="contact-item-value">+1 (800) BABIL-00</span>
+                <span class="contact-item-label content-en">Response</span>
+                <span class="contact-item-label content-es">Respuesta</span>
+                <span class="contact-item-label content-bs">Odgovor</span>
+                <span class="contact-item-value content-en">Within one business day</span>
+                <span class="contact-item-value content-es">En un día laborable</span>
+                <span class="contact-item-value content-bs">U roku jednog radnog dana</span>
               </div>
               <div class="contact-item">
                 <span class="contact-item-label content-en">Hours</span>
@@ -670,14 +653,7 @@ onBeforeUnmount(() => {
 
     <footer>
       <div class="footer-logo">
-        <svg width="24" height="26" viewBox="0 0 80 90" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="28" y="0" width="24" height="18" fill="#d8d4c4" opacity="0.7" />
-          <rect x="18" y="18" width="44" height="16" fill="#d8d4c4" opacity="0.7" />
-          <rect x="5" y="34" width="32" height="16" fill="#d8d4c4" opacity="0.7" />
-          <rect x="43" y="34" width="32" height="16" fill="#d8d4c4" opacity="0.7" />
-          <rect x="0" y="50" width="38" height="18" fill="#d8d4c4" opacity="0.7" />
-          <rect x="42" y="50" width="38" height="18" fill="#d8d4c4" opacity="0.7" />
-        </svg>
+        <img class="brand-logo brand-logo--footer" src="/babil-logo.png" alt="" width="36" height="36" />
         <span class="footer-logo-text">BABIL</span>
       </div>
 

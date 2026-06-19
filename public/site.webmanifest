@@ -1,0 +1,17 @@
+{
+  "name": "Babil Translation & Interpretation Services",
+  "short_name": "Babil Translation",
+  "description": "Professional English, Spanish and Bosnian translation and interpretation services.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#d8d4c4",
+  "theme_color": "#d8d4c4",
+  "icons": [
+    {
+      "src": "/babil-logo.png",
+      "sizes": "1254x1254",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
