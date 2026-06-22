@@ -1,5 +1,5 @@
 <script setup>
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import SpinningLogoIsland from '@/components/SpinningLogoIsland.vue'
 import AboutGlobeIsland from '@/components/AboutGlobeIsland.vue'
 
@@ -8,6 +8,12 @@ const isLoading = ref(true)
 const supportedLanguages = ['en', 'es', 'bs']
 const pathLanguage = window.location.pathname.split('/').filter(Boolean)[0]
 const currentLang = ref(supportedLanguages.includes(pathLanguage) ? pathLanguage : 'en')
+const heroTitles = {
+  en: 'English, Spanish & Bosnian Translation Agency',
+  es: 'Agencia de traducción en inglés, español y bosnio',
+  bs: 'Agencija za engleski, španski i bosanski prevod',
+}
+const heroTitle = computed(() => heroTitles[currentLang.value])
 
 const heroScript = `𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹
 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾 𒌷 𒀭 𒂗 𒍪 𒁲 𒀭 𒂗 𒍪 𒁲 𒀭 𒁹 𒄿 𒈾
@@ -144,9 +150,7 @@ onBeforeUnmount(() => {
 
         <div class="divider-line"></div>
         <p class="hero-name">BABIL</p>
-        <h1 class="hero-seo-title content-en">English, Spanish &amp; Bosnian Translation Agency</h1>
-        <h1 class="hero-seo-title content-es">Agencia de traducción en inglés, español y bosnio</h1>
-        <h1 class="hero-seo-title content-bs">Agencija za engleski, španski i bosanski prevod</h1>
+        <h1 class="hero-seo-title">{{ heroTitle }}</h1>
         <p class="hero-tagline">
           <span class="content-en">Translation &amp; Interpretation Services</span>
           <span class="content-es">Servicios de Traducción e Interpretación</span>
